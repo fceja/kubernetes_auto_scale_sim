@@ -7,6 +7,30 @@ import (
 	"github.com/IBM/sarama"
 )
 
+func AddMessageToTopic(brokers []string, topicName string, message string) {
+	config := sarama.NewConfig()
+	config.Producer.Return.Successes = true // ensure producer waits fro acknowledgment
+
+	producer, err := sarama.NewSyncProducer(brokers, config)
+	if err != nil {
+		log.Fatalf("Failed to start producer: %v", err)
+	}
+	defer producer.Close()
+
+	producerMessage := &sarama.ProducerMessage{
+		Topic: topicName,
+		Value: sarama.StringEncoder(message),
+	}
+
+	partition, offset, err := producer.SendMessage(producerMessage)
+	if err != nil {
+		log.Fatalf("Failed to send message to kafka: %v", err)
+	}
+
+	fmt.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", topicName, partition, offset)
+
+}
+
 func CreateTopic(brokers []string, topicName string) {
 	// create sarama config
 	config := sarama.NewConfig()
@@ -36,7 +60,6 @@ func CreateTopic(brokers []string, topicName string) {
 		log.Fatalf("Error creating topic: %v", err)
 	}
 	fmt.Println("Topic created successfully.")
-
 }
 
 func GetTopics(brokers []string) []string {

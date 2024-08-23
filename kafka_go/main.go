@@ -8,6 +8,7 @@ import (
 func main() {
 	// topic to create or retrieve
 	var topicName string = "example_topic_2"
+	var message string = "This is the message to add"
 
 	// define kafka broker (kafka docker container)
 	brokers := []string{"localhost:9092"}
@@ -22,4 +23,6 @@ func main() {
 		kafka.CreateTopic(brokers, topicName)
 	}
 
+	// add message to topic
+	kafka.AddMessageToTopic(brokers, topicName, message)
 }

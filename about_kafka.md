@@ -26,4 +26,19 @@ License: MIT
 [GitHub - sarama](https://github.com/IBM/sarama)
 
 \*\* used to be maintained by Shopify, however transferred to IBM.
-Shopify favored bindings of librdkafka instead (C/C++)
+Shopify favored bindings of `librdkafka` instead (C/C++)
+
+### Kafka Topics
+
+A `topic` is a name stream of records (or messages).
+When you refer to `topics` in your code, you're dealing with the names of these streams, which organize and categorize data flowing through Kafka.
+
+Topics:
+These are the categories or channels to which data records are sent. i.g. `user-signups` or `order-updates`
+
+Messages:
+These are the actual data records or event that are published to a topic. Each message Typically contains a key, a value, and potentially some metadata.
+
+### Kafka Producer
+
+A `producer` is a component in the Apache Kafka ecosystem that is responsible fo sending records (messages) to Kafka to topics. `Producers` are essential the data entry point into Kafka.
