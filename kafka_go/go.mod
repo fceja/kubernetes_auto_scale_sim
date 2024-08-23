@@ -1,4 +1,5 @@
-module main
+// module kafka_cheatsheet
+module kafka_go
 
 go 1.22.5
 
