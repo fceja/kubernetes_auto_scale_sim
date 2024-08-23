@@ -15,3 +15,15 @@ These producers and consumers can also be though of "inputs" and "outputs", wher
 [Ref - openlogic](https://www.openlogic.com/blog/using-kafka-zookeeper)
 
 The main vehicle for this movement of data is the Kafka broker. The Kafka broker handles all requests from all clients (both producers and consumers as well as metadata). It also manages replication of data across a cluster as well as within topics and partitions.
+
+### Kafka Client
+
+Go (AKA golang)
+
+Kafka Version: 0.8.x
+Maintainer: IBM
+License: MIT
+[GitHub - sarama](https://github.com/IBM/sarama)
+
+\*\* used to be maintained by Shopify, however transferred to IBM.
+Shopify favored bindings of librdkafka instead (C/C++)
