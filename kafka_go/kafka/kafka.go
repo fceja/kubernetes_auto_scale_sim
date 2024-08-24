@@ -1,15 +1,24 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/IBM/sarama"
 )
 
-func AddMessageToTopic(brokers []string, topicName string, message string) {
+type Message struct {
+	ID        int       `json:"id"`
+	Message   string    `json:"message"`
+	Name      string    `json:"name"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+func AddMessageToTopic(brokers []string, topicName string, message Message) error {
 	config := sarama.NewConfig()
-	config.Producer.Return.Successes = true // ensure producer waits fro acknowledgment
+	config.Producer.Return.Successes = true // ensure producer waits for acknowledgment
 
 	producer, err := sarama.NewSyncProducer(brokers, config)
 	if err != nil {
@@ -17,18 +26,19 @@ func AddMessageToTopic(brokers []string, topicName string, message string) {
 	}
 	defer producer.Close()
 
-	producerMessage := &sarama.ProducerMessage{
-		Topic: topicName,
-		Value: sarama.StringEncoder(message),
+	jsonMessage, err := json.Marshal(message)
+	if err != nil {
+		return err
 	}
-
-	partition, offset, err := producer.SendMessage(producerMessage)
+	_, _, err = producer.SendMessage(&sarama.ProducerMessage{
+		Topic: topicName,
+		Value: sarama.StringEncoder(jsonMessage),
+	})
 	if err != nil {
 		log.Fatalf("Failed to send message to kafka: %v", err)
 	}
 
-	fmt.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", topicName, partition, offset)
-
+	return nil
 }
 
 func CreateTopic(brokers []string, topicName string) {
@@ -81,6 +91,58 @@ func GetTopics(brokers []string) []string {
 	}
 
 	return topics
+}
+
+func ReadMessagesFromTopic(brokers []string, topicName string) ([]Message, error) {
+	config := sarama.NewConfig()
+	config.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
+
+	consumer, err := sarama.NewConsumer(brokers, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create consumer: %w", err)
+	}
+	defer consumer.Close()
+
+	partition := int32(0)         // adjust if topic has multiple partitions
+	offset := sarama.OffsetOldest // start from the beginning
+
+	partitionConsumer, err := consumer.ConsumePartition(topicName, partition, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to consume partition: %w", err)
+	}
+	defer partitionConsumer.Close()
+
+	var messages []Message
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for {
+			select {
+			case <-done:
+				return
+			case message, ok := <-partitionConsumer.Messages():
+				if !ok {
+					return
+				}
+
+				// print the raw message value
+				log.Printf("Received message: %s", string(message.Value))
+
+				var msg Message
+				err := json.Unmarshal(message.Value, &msg)
+				if err != nil {
+					log.Printf("Failed to unmarshal message: %v", err)
+					continue
+				}
+				messages = append(messages, msg)
+			}
+		}
+	}()
+
+	<-done
+
+	return messages, nil
 }
 
 func TopicExists(brokers []string, topicName string) bool {
