@@ -24,5 +24,23 @@ func main() {
 	}
 
 	// add message to topic
-	kafka.AddMessageToTopic(brokers, topicName, message)
+	sendMessage := kafka.Message{
+		ID:        123,
+		Message:   "This is the message to add, again.",
+		Name:      "John D",
+		Timestamp: time.Now(),
+	}
+	kafka.AddMessageToTopic(brokers, topicName, sendMessage)
+
+	// read messages from topic
+	messages, err := kafka.ReadMessagesFromTopic(brokers, topicName)
+	if err != nil {
+		log.Fatalf("Error retrieving messages: %v", err)
+	}
+
+	fmt.Printf("\nTopic Messages for %v:", topicName)
+	for _, msg := range messages {
+		fmt.Printf("\nID=%d, Message=%s, Name=%s, Timestamp=%s", msg.ID, msg.Message, msg.Name, msg.Timestamp)
+	}
+
 }
