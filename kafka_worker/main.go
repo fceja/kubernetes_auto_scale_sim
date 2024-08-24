@@ -4,16 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/IBM/sarama"
+	"github.com/joho/godotenv"
 )
 
 type KafkaClient struct {
-	Brokers   []string
-	Config    *sarama.Config
-	Consumer  sarama.Consumer
-	TopicName string
+	BrokerAddresses []string
+	Config        *sarama.Config
+	Consumer      sarama.Consumer
+	TopicName     string
 }
 
 type Message struct {
@@ -24,22 +27,22 @@ type Message struct {
 }
 
 // section: kafka funcs
-func newKafkaClient(brokers []string, topicName string) (*KafkaClient, error) {
+func newKafkaClient(brokerAddresses []string, topicName string) (*KafkaClient, error) {
 	// create sarama config
 	config := sarama.NewConfig()
 	config.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
 
 	// create consumer
-	consumer, err := sarama.NewConsumer(brokers, config)
+	consumer, err := sarama.NewConsumer(brokerAddresses, config)
 	if err != nil {
 		log.Fatalf("failed to create consumer: %v", err)
 	}
 
 	return &KafkaClient{
-		Consumer:  consumer,
-		Config:    config,
-		Brokers:   brokers,
-		TopicName: topicName,
+		Consumer:      consumer,
+		Config:        config,
+		BrokerAddresses: brokerAddresses,
+		TopicName:     topicName,
 	}, nil
 
 }
@@ -96,15 +99,22 @@ func processMessage(messages []Message) {
 
 // section: main
 func main() {
+	// get env vars
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
 	// define broker (kafka docker container) and topic name
-	brokers := []string{"localhost:9092"}
-	topicName := "example_topic_2"
+	var brokerAddresses []string
+	brokerAddresses = append(brokerAddresses, strings.Split(os.Getenv("BROKER_ADDRESSES"), ",")...)
+	topicName := os.Getenv("TOPIC_NAME")
 
 	// create kafka client
-	client, err := newKafkaClient(brokers, topicName)
+	client, err := newKafkaClient(brokerAddresses, topicName)
 	if err != nil {
 		log.Fatalf("Error creating kafka client: %v", err)
 	}
+	log.Printf("kafka client: %+v", client)
 
 	// retrieve messages from topic
 	messages, err := readMessagesFromTopic(client)
