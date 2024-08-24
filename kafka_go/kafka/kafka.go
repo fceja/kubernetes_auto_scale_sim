@@ -104,7 +104,7 @@ func ReadMessagesFromTopic(brokers []string, topicName string) ([]Message, error
 	defer consumer.Close()
 
 	partition := int32(0)         // adjust if topic has multiple partitions
-	offset := sarama.OffsetOldest // start from the beginning
+	offset := sarama.OffsetOldest // start from the beginning (oldest)
 
 	partitionConsumer, err := consumer.ConsumePartition(topicName, partition, offset)
 	if err != nil {
@@ -113,36 +113,29 @@ func ReadMessagesFromTopic(brokers []string, topicName string) ([]Message, error
 	defer partitionConsumer.Close()
 
 	var messages []Message
+	timeout := time.After(2 * time.Second) // Adjust the timeout as needed
 
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		for {
-			select {
-			case <-done:
-				return
-			case message, ok := <-partitionConsumer.Messages():
-				if !ok {
-					return
-				}
-
-				// print the raw message value
-				log.Printf("Received message: %s", string(message.Value))
-
-				var msg Message
-				err := json.Unmarshal(message.Value, &msg)
-				if err != nil {
-					log.Printf("Failed to unmarshal message: %v", err)
-					continue
-				}
-				messages = append(messages, msg)
+	for {
+		select {
+		case message, ok := <-partitionConsumer.Messages():
+			if !ok {
+				// channel closed
+				return messages, nil
 			}
+
+			var msg Message
+			err := json.Unmarshal(message.Value, &msg)
+			if err != nil {
+				log.Printf("Failed to unmarshal message: %v", err)
+				continue
+			}
+			messages = append(messages, msg)
+		case <-timeout:
+			// timeout reached
+			log.Println("Timeout reached, stopping message retrieval.")
+			return messages, nil
 		}
-	}()
-
-	<-done
-
-	return messages, nil
+	}
 }
 
 func TopicExists(brokers []string, topicName string) bool {

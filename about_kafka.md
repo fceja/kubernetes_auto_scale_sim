@@ -49,4 +49,21 @@ A Kafka `consumer` subscribes to one or more Kafka topics and reads messages fro
 
 Consumer Group: a `consumer group` is a group of consumers that work together to consume messages from a Kafka topic. Each consumer in the group is assigned a partition of the topic to read from. Kafka ensures each partition is consumed by ony one consumer in the group at a time.
 
+### Consuming Messages
+
+You can consume messages from a topic in several ways:
+
+- From the `beginning`: consume the earliest (oldest) message.
+- From the `latest`: consume the latest (youngest) message.
+- From a specific `offset`: consume specific offset (index)
+
+### Managing Message Retention
+
+To control how long messages are kept:
+By default, kakfa retains all messages forever.
+
+- `Retention Time`: Messages are keeps for a specific period (e.g., 7 days.)
+- `Retention Size`: MEssages are kept until the log reaches a specific size.
+- `Log Compaction`: Keeps only the latest message for each key, effectively "deleting" older versions.
+
 ### Balance strategies
