@@ -22,3 +22,13 @@ services:
       KAFKA_LISTENER_NAME: INSIDE
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+  kafdrop:
+    image: ciscoceja/kafdrop:4.0.3 # based off of obsidiandynamics/kafdrop
+    container_name: kafdrop
+    platform: linux/arm64/v8
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9093
+    depends_on:
+      - kafka
