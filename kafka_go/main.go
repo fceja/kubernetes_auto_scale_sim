@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kafka_go/kafka"
 	"log"
+	"time"
 )
 
 func main() {
@@ -42,5 +43,4 @@ func main() {
 	for _, msg := range messages {
 		fmt.Printf("\nID=%d, Message=%s, Name=%s, Timestamp=%s", msg.ID, msg.Message, msg.Name, msg.Timestamp)
 	}
-
 }
