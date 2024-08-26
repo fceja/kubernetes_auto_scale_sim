@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/IBM/sarama"
@@ -11,11 +11,14 @@ import (
 )
 
 type Config struct {
-	BrokerAddresses []string
-	TopicName       string
+	BrokerAddresses        []string
+	TopicName              string
+	TopicNumberPartitions  int32
+	TopicReplicationFactor int16
 }
 
-// helper
+// Section: helper funcs
+// Checks if slices contain item.
 func contains(slice []string, item string) bool {
 	for _, elem := range slice {
 		if elem == item {
@@ -25,6 +28,17 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
+// Converts string to int.
+func convertStrToInt(inputStr string) int {
+	inputInt, err := strconv.Atoi(inputStr)
+	if err != nil {
+		log.Fatalf("Error converting string to int: %v", err)
+	}
+
+	return inputInt
+}
+
+// Section: kafka funcs
 // Initializes kafka client.
 func createKafkaClient(brokerAddresses []string, saramaConfig *sarama.Config) sarama.Client {
 	saramaClient, err := sarama.NewClient(brokerAddresses, saramaConfig)
@@ -37,8 +51,8 @@ func createKafkaClient(brokerAddresses []string, saramaConfig *sarama.Config) sa
 }
 
 // Creates kafka topic.
-func createTopic(client sarama.Client, topicName string) {
-	fmt.Println("Creating topic.")
+func createTopic(config Config, client sarama.Client, topicName string) {
+	log.Println("Creating topic.")
 
 	// create sarama admin client
 	admin, err := sarama.NewClusterAdminFromClient(client)
@@ -49,8 +63,8 @@ func createTopic(client sarama.Client, topicName string) {
 
 	// define the topic details
 	topicDetail := sarama.TopicDetail{
-		NumPartitions:     1,
-		ReplicationFactor: 1,
+		NumPartitions:     config.TopicNumberPartitions,
+		ReplicationFactor: config.TopicReplicationFactor,
 	}
 
 	// create topic
@@ -58,20 +72,7 @@ func createTopic(client sarama.Client, topicName string) {
 	if err != nil {
 		log.Fatalf("Error creating topic: %v", err)
 	}
-	fmt.Printf("Topic '%v' created successfully.", topicName)
-}
-
-// Load environment variables to config.
-func loadConfig() Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	return Config{
-		BrokerAddresses: strings.Split(os.Getenv("BROKER_ADDRESSES"), ","),
-		TopicName:       os.Getenv("TOPIC_NAME"),
-	}
+	log.Printf("Topic '%v' created successfully.", topicName)
 }
 
 // Check if kafka topic already exists.
@@ -84,21 +85,43 @@ func topicExists(client sarama.Client, topicName string) bool {
 	return contains(topics, topicName)
 }
 
-// Main
+// Section: init
+// Load environment variables to config.
+func loadConfig() Config {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	topicNumberPartitions := convertStrToInt(os.Getenv("TOPIC_NUMBER_PARTITIONS"))
+	topicReplicationFactor := convertStrToInt(os.Getenv("TOPIC_REPLICATION_FACTOR"))
+
+	var int32topicNumberPartitions = int32(topicNumberPartitions)
+	var int16topicNumberPartitions = int16(topicReplicationFactor)
+
+	return Config{
+		BrokerAddresses:        strings.Split(os.Getenv("BROKER_ADDRESSES"), ","),
+		TopicName:              os.Getenv("TOPIC_NAME"),
+		TopicNumberPartitions:  int32topicNumberPartitions,
+		TopicReplicationFactor: int16topicNumberPartitions,
+	}
+}
+
+// Section: main
 func main() {
 	// load config
 	config := loadConfig()
 	log.Printf("config: %+v", config)
 
+	// init sarama config
 	saramaConfig := sarama.NewConfig()
 	client := createKafkaClient(config.BrokerAddresses, saramaConfig)
 
-	// check if topic exists
-	exists := topicExists(client, config.TopicName)
-	fmt.Printf("Topic already exists: %v\n", exists)
-
 	// if topic does not exist, create
+	exists := topicExists(client, config.TopicName)
 	if !exists {
-		createTopic(client, config.TopicName)
+		createTopic(config, client, config.TopicName)
+	} else {
+		log.Printf("Topic '%v' already exists.", config.TopicName)
 	}
 }

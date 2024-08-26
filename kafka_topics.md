@@ -34,3 +34,63 @@ While Kafka itself doesn't support dynamic partitioning, based on the number of 
   - `kafka-topics.sh --bootstrap-server localhost:9092 --alter --topic example_topic_2 --partitions 4`
 - `Monitor and Adjust`
   - You can write a monitoring tool that checks the load on your consumers and triggers a parititon increase if the load becomes too high. This would be an external process that periodically checks Kafka metrics and makes adjustments as necessary.
+
+## Replication Factor
+
+- `ReplicationFactor`
+  - In Kafka defines the number of replicas each partition will be maintained across different brokers.
+  - Each replica is stored on a different broker.
+  - Replication Factor 1
+    - means on the leader replica exists for a partition.
+    - only one copy of the partition's data stored in the Kafka cluster.
+  - Replication Factor 2
+    - means on the one leader replica and one follower replica for each partition.
+    - there are two copies of the partition's data stored in the Kafka cluster.
+    - if broker holding the leader fails, the follower can be promoted to leader.
+  - Replication Factor n
+    - means one leader and n - 1 followers for each partition
+    - n cannot be zero
+      - n > 0
+      - zero is not allowed
+- Purpose
+  - This is an aspect of Kafka's design to ensure fault tolerance and high availability.
+
+### Roles
+
+#### Leader Replica
+
+- Responsibility
+  - Handles all read and write requests for the partition. When a producer writes messages to a partition, it writes to the leader replica. Consumers also read messages from the leader.
+- Writes
+  - All new messages are written to the leader replica first.
+
+#### Follower Replicas
+
+- Responsibility
+  - Replicate the messages from the leader to ensure data redundancy and fault tolerance.
+- Replication
+  - Followers fetch data from the leader and keep their data in sync. They do not handle client requests directly.
+- Reads
+
+  - Followers do not handle reads; they ony store copies of the data for redundancy. Reads are always served by the leader.
+
+### Process Flow
+
+- Message Write
+  - A producer sends a message to the leader of a partition.
+  - The leader writes the message to its log and then replicates it to its followers.
+- Replication
+  - Followers periodically fetch messages from the leaders and append them to their logs.
+  - This replication process ensures that the follower replicas have the same data as the leader.
+- Failover
+
+  - If the leader fails, one of the followers can be promoted to leader. This ensures that the partition remains available and continues to process requests.
+
+### Key Points
+
+- Synchronization
+  - Followers are synchronized with the leader. They contain the same messages but do not process requests themselves.
+- Fault Tolerance
+  - If the leader fails, one of the followers will be promoted to leader, ensuring continue availability of the partition.
+- No Independent Processing
+  - Followers do not process messages independently or perform any operations on the messages. They are purely for replication and redundancy.
