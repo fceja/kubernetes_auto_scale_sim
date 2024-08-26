@@ -18,6 +18,8 @@ You can check if a `consumer group` exists using the Kafka command-line tools or
 
 ### Consumer Group Worker Assignment
 
+`**NOTE**` - partition creation / altering is handled at the topic level. Read `kafka_topics.md` for strategies or more info.
+
 When you add new workers with the same `consumer group ID`, Kafka will automatically handle the assignment of partitions to those workers.
 
 - `Automatic Partition Assignment`
@@ -28,6 +30,26 @@ When you add new workers with the same `consumer group ID`, Kafka will automatic
   - The partitions will be redistributed among the new set of workers. This is done automatically, so you don't have to manually configure with worker gets which partition.
 - `Manual Partitioning`
   - While Kafka handles this automatically, you can also manually assign specific partitions to specific consumers if you need fine-grained control. However, this is not necessary for most use cases where automatic partition assignment works well.
+
+## Rebalancing Strategy
+
+- `RoundRobin`
+  - Distributes partitions evenly across all consumers in the group.
+- `Range`
+  - Assigns consecutive partitions to consumers.
+    - e.g. If there are two consumers and four partitions, th first consumer might get partitions 0 and 1, and the second consumer might get partitions 2 and 3.
+  - Could lead to uneven distribution of partitions, especially if the number of partitions is not evenly divisible by the number of consumers.
+- `Sticky`
+  - Tries to keep partition assignments stable across rebalances, minimizing changes in partition ownership.
+- `Default`
+  - Kafka uses `Range` as default.
+
+## Rebalancing Strategy - Common Practice
+
+- `Range`
+  - Often used in scenarios where you need a predictable partition-to-consumer mapping
+- `RoundRobin`
+  - Preferred in scenarios where you want an even distribution of partitions across consumers, especially when dealing with variable workloads or dynamic scaling.
 
 ### Message Retrieval
 

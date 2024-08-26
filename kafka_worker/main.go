@@ -34,7 +34,11 @@ func loadConfig() Config {
 }
 
 // Runs before consumer starts processing messages.
-func (consumer *MyConsumer) Setup(sarama.ConsumerGroupSession) error { return nil }
+func (consumer *MyConsumer) Setup(sess sarama.ConsumerGroupSession) error {
+	log.Printf("Partition assigned: %v", sess.Claims())
+
+	return nil
+}
 
 // Runs after consumer stops processing messages.
 func (consumer *MyConsumer) Cleanup(sarama.ConsumerGroupSession) error { return nil }
@@ -54,8 +58,9 @@ func (consumer *MyConsumer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim
 	return nil
 }
 
-// Processes message
+// Processes message.
 func processMessage(msg *sarama.ConsumerMessage) {
+	log.Printf("Partition %v, Offset %v", msg.Partition, msg.Offset)
 	log.Printf("%s", string(msg.Value))
 	time.Sleep(1 * time.Second)
 }
@@ -66,8 +71,11 @@ func main() {
 	config := loadConfig()
 	log.Printf("config: %+v", config)
 
+	saramaConfig := sarama.NewConfig()
+	saramaConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
+
 	// create kafka client
-	client, err := sarama.NewClient(config.BrokerAddresses, nil)
+	client, err := sarama.NewClient(config.BrokerAddresses, saramaConfig)
 	if err != nil {
 		log.Fatalf("Error creating Kafka client: %v", err)
 	}
