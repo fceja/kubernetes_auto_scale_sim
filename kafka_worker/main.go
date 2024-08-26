@@ -1,8 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
+	"context"
 	"log"
 	"os"
 	"strings"
@@ -12,123 +11,82 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type KafkaClient struct {
+type Config struct {
 	BrokerAddresses []string
-	Config        *sarama.Config
-	Consumer      sarama.Consumer
-	TopicName     string
+	ConsumerGroupId string
+	TopicName       string
 }
 
-type Message struct {
-	ID        int       `json:"id"`
-	Message   string    `json:"message"`
-	Name      string    `json:"name"`
-	Timestamp time.Time `json:"timestamp"`
-}
+type MyConsumer struct{}
 
-// section: kafka funcs
-func newKafkaClient(brokerAddresses []string, topicName string) (*KafkaClient, error) {
-	// create sarama config
-	config := sarama.NewConfig()
-	config.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
-
-	// create consumer
-	consumer, err := sarama.NewConsumer(brokerAddresses, config)
+// Load environment variables into config.
+func loadConfig() Config {
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("failed to create consumer: %v", err)
+		log.Fatal("Error loading .env file")
 	}
 
-	return &KafkaClient{
-		Consumer:      consumer,
-		Config:        config,
-		BrokerAddresses: brokerAddresses,
-		TopicName:     topicName,
-	}, nil
-
-}
-
-func readMessagesFromTopic(client *KafkaClient) ([]Message, error) {
-	// consume topic partition
-	partition := int32(0)         // adjust if topic has multiple partitions
-	offset := sarama.OffsetOldest // start from the beginning (oldest)
-	partitionConsumer, err := client.Consumer.ConsumePartition(client.TopicName, partition, offset)
-	if err != nil {
-		return nil, fmt.Errorf("failed to consume partition: %w", err)
-	}
-	defer partitionConsumer.Close()
-
-	// retrieve messages from topic partition
-	var messages []Message
-	timeout := time.After(1 * time.Second) // Adjust the timeout as needed
-
-	for {
-		select {
-		case message, ok := <-partitionConsumer.Messages():
-			if !ok {
-				// channel closed
-				return messages, nil
-			}
-
-			// parse message to json
-			var msg Message
-			err := json.Unmarshal(message.Value, &msg)
-			if err != nil {
-				log.Printf("Failed to unmarshal message: %v", err)
-				continue
-			}
-
-			// store message
-			messages = append(messages, msg)
-		case <-timeout:
-			// timeout reached
-			log.Println("Timeout reached, stopping message retrieval.")
-			return messages, nil
-		}
+	return Config{
+		BrokerAddresses: strings.Split(os.Getenv("BROKER_ADDRESSES"), ","),
+		ConsumerGroupId: os.Getenv("CONSUMER_GROUP_ID"),
+		TopicName:       os.Getenv("TOPIC_NAME"),
 	}
 }
 
-// section: worker funcs
-func processMessage(messages []Message) {
-	log.Print("Messages:")
-	for _, msg := range messages {
-		log.Printf("ID=%d, Message=%s, Name=%s, Timestamp=%s", msg.ID, msg.Message, msg.Name, msg.Timestamp)
+// Runs before consumer starts processing messages.
+func (consumer *MyConsumer) Setup(sarama.ConsumerGroupSession) error { return nil }
+
+// Runs after consumer stops processing messages.
+func (consumer *MyConsumer) Cleanup(sarama.ConsumerGroupSession) error { return nil }
+
+// Consume messages from assigned partition in consumer group,
+// and manually commit offset after processing each message.
+func (consumer *MyConsumer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	for message := range claim.Messages() {
+		// process message
+		processMessage(message)
+
+		// commit offset
+		sess.MarkMessage(message, "")
+		sess.Commit()
 	}
 
+	return nil
+}
+
+// Processes message
+func processMessage(msg *sarama.ConsumerMessage) {
+	log.Printf("%s", string(msg.Value))
 	time.Sleep(1 * time.Second)
 }
 
-// section: main
+// Main
 func main() {
-	// get env vars
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-
-	// define broker (kafka docker container) and topic name
-	var brokerAddresses []string
-	brokerAddresses = append(brokerAddresses, strings.Split(os.Getenv("BROKER_ADDRESSES"), ",")...)
-	topicName := os.Getenv("TOPIC_NAME")
+	// load config
+	config := loadConfig()
+	log.Printf("config: %+v", config)
 
 	// create kafka client
-	client, err := newKafkaClient(brokerAddresses, topicName)
+	client, err := sarama.NewClient(config.BrokerAddresses, nil)
 	if err != nil {
-		log.Fatalf("Error creating kafka client: %v", err)
+		log.Fatalf("Error creating Kafka client: %v", err)
 	}
-	log.Printf("kafka client: %+v", client)
+	defer client.Close()
 
-	// retrieve messages from topic
-	messages, err := readMessagesFromTopic(client)
+	// create consumer group
+	consumerGroup, err := sarama.NewConsumerGroupFromClient(config.ConsumerGroupId, client)
 	if err != nil {
-		log.Fatalf("Error retrieving messages: %v", err)
+		log.Fatalf("Failed to create consumer group: %v", err)
 	}
+	defer consumerGroup.Close()
 
-	// process messages
-	processMessage(messages)
-
-	// close open connections
-	defer func() {
-		if client.Consumer != nil {
-			client.Consumer.Close()
+	// consume messages
+	consumer := &MyConsumer{}
+	ctx := context.Background()
+	for {
+		err = consumerGroup.Consume(ctx, []string{config.TopicName}, consumer)
+		if err != nil {
+			log.Fatalf("Error consuming messages: %v", err)
 		}
-	}()
+	}
 }

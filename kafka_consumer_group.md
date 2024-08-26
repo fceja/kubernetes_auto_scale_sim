@@ -28,3 +28,9 @@ When you add new workers with the same `consumer group ID`, Kafka will automatic
   - The partitions will be redistributed among the new set of workers. This is done automatically, so you don't have to manually configure with worker gets which partition.
 - `Manual Partitioning`
   - While Kafka handles this automatically, you can also manually assign specific partitions to specific consumers if you need fine-grained control. However, this is not necessary for most use cases where automatic partition assignment works well.
+
+### Message Retrieval
+
+It is standard practice to retrieve and process all available messages from the assigned partition in Kafka. Kafka's design is optimized for high-throughput, streaming data, where consumers typically process messages as they arrive in real-time. By consumning all messages in a partition, you ensure that no data is missed and that the consumer group can keep up with the flow of data.
+
+- In `func ConsumeClaim(...)` -> `claim.Messages()`
