@@ -72,8 +72,9 @@ func loadConfig() Config {
 	return Config{
 		BrokerAddresses: strings.Split(os.Getenv("BROKER_ADDRESSES"), ","),
 		MessageLimit:    messageLimit,
-		SleepTimeout:    time.Duration(sleepTimeout) * time.Second,
-		TopicName:       os.Getenv("TOPIC_NAME"),
+		// SleepTimeout:    time.Duration(sleepTimeout) * time.Second,
+		SleepTimeout: time.Duration(sleepTimeout) * time.Millisecond,
+		TopicName:    os.Getenv("TOPIC_NAME"),
 	}
 }
 
