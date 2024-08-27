@@ -2,7 +2,6 @@ package lib
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/IBM/sarama"
 	"go.uber.org/zap"
@@ -54,7 +53,7 @@ func (consumer *MyConsumer) Cleanup(sarama.ConsumerGroupSession) error {
 func (consumer *MyConsumer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	for message := range claim.Messages() {
 		// process message
-		processMessage(message)
+		ProcessMessage(message)
 
 		// commit offset
 		sess.MarkMessage(message, "")
@@ -62,17 +61,4 @@ func (consumer *MyConsumer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim
 	}
 
 	return nil
-}
-
-// Process message.
-func processMessage(msg *sarama.ConsumerMessage) {
-	zap.L().Debug("Processing claims message.",
-		zap.String("sleeping", fmt.Sprintf("%v", 5*time.Second)),
-		zap.String("partition", fmt.Sprintf("%+v", msg.Partition)),
-		zap.String("offset", fmt.Sprintf("%+v", msg.Offset)),
-		zap.String("jsonEncoded", string(msg.Value)),
-	)
-
-	// sleep
-	time.Sleep(3 * time.Second)
 }
