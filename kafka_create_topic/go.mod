@@ -1,5 +1,5 @@
 // module kafka_cheatsheet
-module kafka_go
+module kafka_create_topic
 
 go 1.22.5
 
