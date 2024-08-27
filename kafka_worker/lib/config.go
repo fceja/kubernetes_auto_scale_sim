@@ -1,9 +1,9 @@
 package lib
 
 import (
+	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -12,20 +12,18 @@ import (
 type Config struct {
 	AppEnv          string
 	BrokerAddresses []string
+	ConsumerGroupId string
 	LogFilePath     string
 	LogLevel        string
-	MessageLimit    int
-	SleepTimeout    time.Duration
 	TopicName       string
 }
 
-// Load environment vars and into config.
-// Apply conversions, if needed
+// Load environment variables into config.
 func LoadConfig() Config {
 	// load env vars
 	err := godotenv.Load()
 	if err != nil {
-		zap.L().Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file")
 	}
 
 	// verify env vars exist
@@ -39,17 +37,12 @@ func LoadConfig() Config {
 		zap.L().Fatal("Environment variable must exist.")
 	}
 
-	// conversions
-	messageLimit := ConvertStrToInt(os.Getenv("MESSAGE_LIMIT"))
-	sleepTimeout := ConvertStrToInt(os.Getenv("SLEEP_TIMEOUT"))
-
 	return Config{
 		AppEnv:          os.Getenv("APP_ENV"),
 		BrokerAddresses: strings.Split(os.Getenv("BROKER_ADDRESSES"), ","),
-		LogLevel:        os.Getenv("LOG_LEVEL"),
+		ConsumerGroupId: os.Getenv("CONSUMER_GROUP_ID"),
 		LogFilePath:     os.Getenv("LOG_FILE_PATH"),
-		MessageLimit:    messageLimit,
-		SleepTimeout:    time.Duration(sleepTimeout) * time.Millisecond,
+		LogLevel:        os.Getenv("LOG_LEVEL"),
 		TopicName:       os.Getenv("TOPIC_NAME"),
 	}
 }

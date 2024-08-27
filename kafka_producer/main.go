@@ -13,7 +13,7 @@ func main() {
 	config := lib.LoadConfig()
 
 	// create zapLogger
-	zapLogger, err := lib.SetupLogger(config)
+	zapLogger, err := lib.SetupZapLogger(config)
 	if err != nil {
 		zap.L().Fatal("Error setting up logger.", zap.Error(err))
 	}

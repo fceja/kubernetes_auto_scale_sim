@@ -8,6 +8,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Sets up a logger using uber's zap library.
+// https://github.com/uber-go/zap
 func SetupZapLogger(config Config) (*zap.Logger, error) {
 	// create dir if does not exist
 	var dir = strings.Split(config.LogFilePath, "/")[0]
