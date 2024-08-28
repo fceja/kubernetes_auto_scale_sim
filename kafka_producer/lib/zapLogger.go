@@ -49,8 +49,7 @@ func SetupZapLogger(config Config) (*zap.Logger, error) {
 		consoleCore := zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), zap.DebugLevel)
 
 		// Combine the cores into a single logger
-		logger = zap.New(zapcore.NewTee(consoleCore, fileCore))
-		logger = logger.WithOptions(zap.AddCaller())
+		logger = zap.New(zapcore.NewTee(consoleCore, fileCore)).WithOptions(zap.AddCaller())
 
 	} else {
 		zap.L().Fatal("Invalid environment variable.")

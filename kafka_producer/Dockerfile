@@ -1,26 +1,26 @@
 # Stage 1: Build Go binary for ARM64v8 using Alpine
 FROM arm64v8/golang:alpine3.19 AS builder
 
-# Set working directory inside container
+# Set working directory inside temp container
 WORKDIR /app
 
-# Copy the source code into the container
+# Copy source code into container
 COPY . .
 
-# Build the Go binary
+# Build Go binary
 RUN go build -o kafka-producer main.go
 
-# Stage 2: Create a minimal image to run the Go binary
+# Stage 2: Create a minimal image to run Go binary
 FROM arm64v8/alpine:3.19
 
-# Install necessary certificates
-RUN apk add --no-cache ca-certificates
-
-# Set working directory inside the final container
+# Set working directory inside final container
 WORKDIR /app
 
-# Copy the Go binary from the builder stage
+# Install certificates
+RUN apk add --no-cache ca-certificates
+
+# Copy Go binary from builder stage
 COPY --from=builder /app/kafka-producer .
 
-# Command to run the binary
-ENTRYPOINT ["/entrypoint.sh"]
+# Command to run binary
+ENTRYPOINT ["sh", "-c", "./kafka-producer"]

@@ -1,12 +1,13 @@
 package lib
 
 import (
+	"fmt"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 )
 
 type Config struct {
@@ -19,37 +20,101 @@ type Config struct {
 	TopicName       string
 }
 
-// Load environment vars and into config.
-// Apply conversions, if needed
-func LoadConfig() Config {
-	// load env vars
+// Helper
+// Converts string to a map
+func convertStrToMap(secretStr string) map[string]string {
+	lines := strings.Split(secretStr, "\n")
+	newMap := make(map[string]string)
+
+	// Parse each line and extract key-value pairs
+	for _, line := range lines {
+		// skip empty lines
+		if line == "" {
+			continue
+		}
+
+		// split line into key and value by '='
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			panic(fmt.Sprintln("Malformed line:", line))
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		newMap[key] = value
+	}
+
+	return newMap
+}
+
+// Load env vars via docker swarm - https://docs.docker.com/engine/swarm/
+func loadDockerEnvConfig() Config {
+	fmt.Println("\nAttempting to load docker Config.")
+
+	secretData, err := os.ReadFile("/run/secrets/environment_variables")
+	if err != nil {
+		panic(err)
+	}
+
+	// convert to map
+	mapSecrets := convertStrToMap(string(secretData))
+
+	return Config{
+		AppEnv:          mapSecrets["APP_ENV"],
+		BrokerAddresses: strings.Split(mapSecrets["BROKER_ADDRESSES"], ","),
+		LogLevel:        mapSecrets["LOG_LEVEL"],
+		LogFilePath:     mapSecrets["LOG_FILE_PATH"],
+		MessageLimit:    ConvertStrToInt(mapSecrets["MESSAGE_LIMIT"]),
+		SleepTimeout:    time.Duration(ConvertStrToInt(mapSecrets["SLEEP_TIMEOUT"])) * time.Millisecond,
+		TopicName:       mapSecrets["TOPIC_NAME"],
+	}
+}
+
+// Load env vars from local .env file
+func loadLocalEnvConfig() Config {
 	err := godotenv.Load()
 	if err != nil {
-		zap.L().Fatal("Error loading .env file")
+		panic(err)
 	}
-
-	// verify env vars exist
-	if os.Getenv("APP_ENV") != "development" {
-		zap.L().Fatal("Environment variable must exist.")
-	}
-	if os.Getenv("LOG_FILE_PATH") == "" {
-		zap.L().Fatal("Environment variable must exist.")
-	}
-	if os.Getenv("LOG_LEVEL") == "" {
-		zap.L().Fatal("Environment variable must exist.")
-	}
-
-	// conversions
-	messageLimit := ConvertStrToInt(os.Getenv("MESSAGE_LIMIT"))
-	sleepTimeout := ConvertStrToInt(os.Getenv("SLEEP_TIMEOUT"))
 
 	return Config{
 		AppEnv:          os.Getenv("APP_ENV"),
 		BrokerAddresses: strings.Split(os.Getenv("BROKER_ADDRESSES"), ","),
 		LogLevel:        os.Getenv("LOG_LEVEL"),
 		LogFilePath:     os.Getenv("LOG_FILE_PATH"),
-		MessageLimit:    messageLimit,
-		SleepTimeout:    time.Duration(sleepTimeout) * time.Millisecond,
+		MessageLimit:    ConvertStrToInt(os.Getenv("MESSAGE_LIMIT")),
+		SleepTimeout:    time.Duration(ConvertStrToInt(os.Getenv("SLEEP_TIMEOUT"))) * time.Millisecond,
 		TopicName:       os.Getenv("TOPIC_NAME"),
 	}
+}
+
+// Validates config values are not empty
+// Helps maintain consistency for local and docker config
+func validateConfig(config Config) {
+	value := reflect.ValueOf(config)
+	for i := 0; i < value.NumField(); i++ {
+		if value.Field(i).IsZero() {
+			typ := reflect.TypeOf(config)
+			panic(fmt.Sprintln("Invalid value:", typ.Field(i).Name))
+		}
+	}
+}
+
+// Allows program to determine whether it is being ran locally or within a docker container
+// It then formats/loads environment variables
+func LoadConfig() Config {
+	var envConfig Config
+
+	envConfigPath := ".env"
+	_, envFileErr := os.ReadFile(envConfigPath)
+	if envFileErr != nil {
+		envConfig = loadDockerEnvConfig()
+	} else {
+		envConfig = loadLocalEnvConfig()
+	}
+
+	validateConfig(envConfig)
+
+	return envConfig
 }
