@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  kafka_producer:
+    image: kafka_producer # Use the built image name here
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+    secrets:
+      - environment_variables
+    networks:
+      - my_network
+
+secrets:
+  environment_variables:
+    external: true
+
+networks:
+  my_network:
+    driver: overlay
