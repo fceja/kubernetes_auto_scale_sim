@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   zookeeper:
-    image: zookeeper:latest
+    image: zookeeper:3.9.2
     container_name: zookeeper
     platform: linux/arm64/v8
     ports:
