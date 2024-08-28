@@ -2,7 +2,8 @@ version: "3.8"
 
 services:
   kafka_producer:
-    image: kafka_producer # Use the built image name here
+    # Must build image first - `docker build -t kafka_producer ~/kafka_producer/.`
+    image: kafka_producer
     deploy:
       replicas: 1
       restart_policy:

@@ -50,11 +50,11 @@ func convertStrToMap(secretStr string) map[string]string {
 
 // Load env vars via docker swarm - https://docs.docker.com/engine/swarm/
 func loadDockerEnvConfig() Config {
-	fmt.Println("\nAttempting to load docker Config.")
+	fmt.Println("\nAttempting to load docker config via docker swarm.")
 
 	secretData, err := os.ReadFile("/run/secrets/environment_variables")
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("\nStack enabled? Error: %v", err))
 	}
 
 	// convert to map
