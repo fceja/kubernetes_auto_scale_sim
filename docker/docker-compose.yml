@@ -1,15 +1,20 @@
 version: "3.8"
 services:
   zookeeper:
-    image: zookeeper:3.9.2
-    container_name: zookeeper
+    build:
+      context: ./docker_images/zookeeper
+      dockerfile: Dockerfile
+    # image: zookeeper:3.9.2 # Note - Use build or official image
+    container_name: zookeeper-arm64v8
     platform: linux/arm64/v8
     ports:
       - "2181:2181"
-
   kafka:
-    image: bitnami/kafka:3.4.1 # supports zookeper
-    container_name: kafka
+    build:
+      context: ./docker_images/kafka
+      dockerfile: Dockerfile
+    # image: bitnami/kafka:3.4.1 # Note - Use build or official image
+    container_name: kafka-arm64v8
     platform: linux/arm64/v8
     depends_on:
       - zookeeper
@@ -24,7 +29,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
   kafdrop:
     image: ciscoceja/kafdrop:4.0.3 # based off of obsidiandynamics/kafdrop
-    container_name: kafdrop
+    container_name: kafdrop-arm64v8
     platform: linux/arm64/v8
     ports:
       - "9000:9000"
