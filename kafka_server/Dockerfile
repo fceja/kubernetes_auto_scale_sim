@@ -12,12 +12,12 @@ ENV KAFKA_VERSION=3.4.1 \
     KAFKA_LOG_DIR=/var/lib/kafka/logs
 
 # Install required packages and clean up
-RUN apt-get update && apt-get install -y wget curl gnupg \
+RUN apt-get update && apt-get install -y wget curl gnupg netcat-openbsd \
     && wget https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz \
     && tar -xzf kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz -C /opt \
     && mv /opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION} ${KAFKA_HOME} \
     && rm kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz \
-    && apt-get remove -y wget curl gnupg \
+    && apt-get remove -y wget gnupg curl \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -32,7 +32,11 @@ EXPOSE 9092
 WORKDIR ${KAFKA_HOME}
 
 # Copy config file
+COPY init-kafka-server.sh /usr/local/bin/init-kafka-server.sh
 COPY /server.properties ${KAFKA_HOME}/config/server.properties
 
-# Define entrypoint to start Kafka
-ENTRYPOINT ["bin/kafka-server-start.sh", "config/server.properties"]
+# Make executable
+RUN chmod +x /usr/local/bin/init-kafka-server.sh
+
+# Define entrypoint, Kafka server startup script
+ENTRYPOINT ["/usr/local/bin/init-kafka-server.sh"]
