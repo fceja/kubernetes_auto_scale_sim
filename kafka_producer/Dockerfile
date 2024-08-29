@@ -10,17 +10,23 @@ COPY . .
 # Build Go binary
 RUN go build -o kafka-producer main.go
 
-# Stage 2: Create a minimal image to run Go binary
+# Stage 2: Create minimal image to run Go binary
 FROM arm64v8/alpine:3.19
+
+# Set environment variables
+ENV KAFKA_HOSTNAME=kafka-server \
+    KAFKA_SERVER_PORT=9092 \
+    INIT_FILE_PATH=init-kafka-producer.sh
 
 # Set working directory inside final container
 WORKDIR /app
 
 # Install certificates
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates netcat-openbsd
 
-# Copy Go binary from builder stage
+# Copy Go binary from builder stage and init script
 COPY --from=builder /app/kafka-producer .
+COPY init-kafka-producer.sh .
 
-# Command to run binary
-ENTRYPOINT ["sh", "-c", "./kafka-producer"]
+# Run Kafka producer startup script
+ENTRYPOINT ["sh", "/app/init-kafka-producer.sh"]

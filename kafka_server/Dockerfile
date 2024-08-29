@@ -4,12 +4,17 @@ FROM arm64v8/eclipse-temurin:22.0.2_9-jdk
 # NOTE - Kafka 3.4.1 supports zookeeper 3.9.2
 # NOTE - Kafka versions after 3.4.1 no longer support zookeeper
 
-# Set environment variables for Kafka version and home directory
+# Set environment variables
 ENV KAFKA_VERSION=3.4.1 \
     SCALA_VERSION=2.13 \
     KAFKA_HOME=/opt/kafka \
     KAFKA_DATA_DIR=/var/lib/kafka/data \
-    KAFKA_LOG_DIR=/var/lib/kafka/logs
+    KAFKA_LOG_DIR=/var/lib/kafka/logs \
+    KAFKA_HOSTNAME=localhost \
+    KAFKA_SERVER_PORT=9092 \
+    ZOOKEEPER_HOSTNAME=zookeeper \
+    ZOOKEEPER_SERVER_PORT=2181 \
+    INIT_FILE_PATH=init-kafka-server.sh
 
 # Install required packages and clean up
 RUN apt-get update && apt-get install -y wget curl gnupg netcat-openbsd \
@@ -31,12 +36,9 @@ EXPOSE 9092
 # Set working dir
 WORKDIR ${KAFKA_HOME}
 
-# Copy config file
-COPY init-kafka-server.sh /usr/local/bin/init-kafka-server.sh
+# Copy config file and init script
 COPY /server.properties ${KAFKA_HOME}/config/server.properties
+COPY init-kafka-server.sh /usr/local/bin/init-kafka-server.sh
 
-# Make executable
-RUN chmod +x /usr/local/bin/init-kafka-server.sh
-
-# Define entrypoint, Kafka server startup script
+# Run Kafka server startup script
 ENTRYPOINT ["/usr/local/bin/init-kafka-server.sh"]
