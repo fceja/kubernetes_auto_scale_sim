@@ -24,7 +24,7 @@ func main() {
 	zap.L().Debug("Configuration values set.", zap.String("config", fmt.Sprintf("%+v", config)))
 
 	// create kafka client
-	client := lib.CreateKafkaClient(config)
+	client := lib.InitKafkaClient(config)
 	defer client.Close()
 
 	// create consumer group

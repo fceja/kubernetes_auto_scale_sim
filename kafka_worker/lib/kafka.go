@@ -2,27 +2,13 @@ package lib
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/IBM/sarama"
 	"go.uber.org/zap"
 )
 
 type MyConsumer struct{}
-
-// Create kafka client.
-func CreateKafkaClient(config Config) sarama.Client {
-	// create sarama config
-	saramaConfig := sarama.NewConfig()
-	saramaConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
-
-	// create kafka client
-	client, err := sarama.NewClient(config.BrokerAddresses, saramaConfig)
-	if err != nil {
-		zap.L().Fatal("Error creating Kafka client.", zap.Error(err))
-	}
-
-	return client
-}
 
 // Create consumer group.
 func CreateConsumerGroup(consumerGroupId string, client sarama.Client) sarama.ConsumerGroup {
@@ -61,4 +47,32 @@ func (consumer *MyConsumer) ConsumeClaim(sess sarama.ConsumerGroupSession, claim
 	}
 
 	return nil
+}
+
+func pollForKafkaConnection(brokerAddresses []string, config *sarama.Config) sarama.Client {
+	var client sarama.Client
+
+	for {
+		var err error
+		client, err = sarama.NewClient(brokerAddresses, config)
+		if err != nil {
+			zap.L().Error("Failed to connect to Kafka.", zap.Error(err))
+			time.Sleep(10 * time.Second)
+			continue
+		}
+		break
+	}
+
+	return client
+}
+
+// Create kafka client.
+func InitKafkaClient(config Config) sarama.Client {
+	// create sarama config
+	saramaConfig := sarama.NewConfig()
+	saramaConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
+
+	client := pollForKafkaConnection(config.BrokerAddresses, saramaConfig)
+
+	return client
 }

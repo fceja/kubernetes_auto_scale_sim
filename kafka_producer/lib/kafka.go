@@ -28,11 +28,12 @@ func pollForKafkaConnection(brokerAddresses []string, config *sarama.Config) sar
 		producer, err = sarama.NewSyncProducer(brokerAddresses, config)
 		if err != nil {
 			zap.L().Error("Failed to start producer.", zap.Error(err))
-			time.Sleep(20 * time.Second)
+			time.Sleep(10 * time.Second)
 			continue
 		}
 		break
 	}
+
 	return producer
 }
 
