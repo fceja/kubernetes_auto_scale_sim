@@ -27,12 +27,19 @@
        docker build -t kafka-3.4.1-producer ./kafka_producer
       ```
 
+  - Kafka Worker
+
+    - ```bash
+       docker build -t kafka-3.4.1-worker ./kafka_worker
+      ```
+
   - Kafka - All
 
     - ```bash
        docker build -t zookeeper-3.9.2 ./zookeeper \
        && docker build -t kafka-3.4.1-server ./kafka_server \
-       && docker build -t kafka-3.4.1-producer ./kafka_producer
+       && docker build -t kafka-3.4.1-producer ./kafka_producer \
+       && docker build -t kafka-3.4.1-worker ./kafka_worker
       ```
 
   - Deploy stack

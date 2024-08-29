@@ -13,8 +13,8 @@ type Config struct {
 	AppEnv          string
 	BrokerAddresses []string
 	ConsumerGroupId string
-	LogFilePath     string
 	LogLevel        string
+	LogFilePath     string
 	TopicName       string
 }
 
@@ -61,6 +61,7 @@ func loadDockerEnvConfig(envConfigPath string) Config {
 	return Config{
 		AppEnv:          mapSecrets["APP_ENV"],
 		BrokerAddresses: strings.Split(mapSecrets["DOCKER_BROKER_ADDRESSES"], ","),
+		ConsumerGroupId: mapSecrets["CONSUMER_GROUP_ID"],
 		LogLevel:        mapSecrets["LOG_LEVEL"],
 		LogFilePath:     mapSecrets["LOG_FILE_PATH"],
 		TopicName:       mapSecrets["TOPIC_NAME"],
@@ -77,6 +78,7 @@ func loadLocalEnvConfig() Config {
 	return Config{
 		AppEnv:          os.Getenv("APP_ENV"),
 		BrokerAddresses: strings.Split(os.Getenv("LOCAL_BROKER_ADDRESSES"), ","),
+		ConsumerGroupId: os.Getenv("CONSUMER_GROUP_ID"),
 		LogLevel:        os.Getenv("LOG_LEVEL"),
 		LogFilePath:     os.Getenv("LOG_FILE_PATH"),
 		TopicName:       os.Getenv("TOPIC_NAME"),
