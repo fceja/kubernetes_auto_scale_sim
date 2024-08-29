@@ -27,22 +27,17 @@
        docker build -t kafka-3.4.1-producer ./kafka_producer
       ```
 
-  - Deploy stack
-
-    - ```bash
-       docker stack rm my_stack \
-       && docker stack deploy -c docker-compose.yml my_stack
-      ```
-
-- All-in-one
-
-  - Builds docker images, deletes previous stack, re-deploys stack.
-  - Navigate to ~/project root
+  - Kafka - All
 
     - ```bash
        docker build -t zookeeper-3.9.2 ./zookeeper \
        && docker build -t kafka-3.4.1-server ./kafka_server \
-       && docker build -t kafka-3.4.1-producer ./kafka_producer \
-       && docker stack rm my_stack \
+       && docker build -t kafka-3.4.1-producer ./kafka_producer
+      ```
+
+  - Deploy stack
+
+    - ```bash
+       docker stack rm my_stack \
        && docker stack deploy -c docker-compose.yml my_stack
       ```

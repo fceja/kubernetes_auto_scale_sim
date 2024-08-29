@@ -33,23 +33,18 @@ services:
         condition: none
     secrets:
       - environment_variables
-    networks:
-      - my_network
-    # kafdrop: # Optional
-    #   image: ciscoceja/kafdrop:4.0.3 # based off of obsidiandynamics/kafdrop
-    #   deploy:
-    #     replicas: 1
-    #     restart_policy:
-    #       condition: none
-    #   ports:
-    #     - "9000:9000"
-    #   environment:
-    #     KAFKA_BROKERCONNECT: kafka:9093
-    #   depends_on:
-    #     - kafka
+  kafdrop: # Optional
+    image: ciscoceja/kafdrop:4.0.3 # based off of obsidiandynamics/kafdrop
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9093
+    depends_on:
+      - kafka
 secrets:
   environment_variables:
     external: true
-networks:
-  my_network:
-    driver: overlay

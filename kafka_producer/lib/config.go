@@ -62,7 +62,7 @@ func loadDockerEnvConfig() Config {
 
 	return Config{
 		AppEnv:          mapSecrets["APP_ENV"],
-		BrokerAddresses: strings.Split(mapSecrets["BROKER_ADDRESSES"], ","),
+		BrokerAddresses: strings.Split(mapSecrets["DOCKER_BROKER_ADDRESSES"], ","),
 		LogLevel:        mapSecrets["LOG_LEVEL"],
 		LogFilePath:     mapSecrets["LOG_FILE_PATH"],
 		MessageLimit:    ConvertStrToInt(mapSecrets["MESSAGE_LIMIT"]),
@@ -80,7 +80,7 @@ func loadLocalEnvConfig() Config {
 
 	return Config{
 		AppEnv:          os.Getenv("APP_ENV"),
-		BrokerAddresses: strings.Split(os.Getenv("BROKER_ADDRESSES"), ","),
+		BrokerAddresses: strings.Split(os.Getenv("LOCAL_BROKER_ADDRESSES"), ","),
 		LogLevel:        os.Getenv("LOG_LEVEL"),
 		LogFilePath:     os.Getenv("LOG_FILE_PATH"),
 		MessageLimit:    ConvertStrToInt(os.Getenv("MESSAGE_LIMIT")),
