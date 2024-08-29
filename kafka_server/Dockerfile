@@ -1,7 +1,8 @@
-# Official Images for OpenJDK binaries built by Eclipse Temurin.
+# Official Images for OpenJDK binaries, built by Eclipse Temurin.
 FROM arm64v8/eclipse-temurin:22.0.2_9-jdk
 
-# NOTE - Kafka 3.4.1 supports zookeeper
+# NOTE - Kafka 3.4.1 supports zookeeper 3.9.2
+# NOTE - Kafka versions after 3.4.1 no longer support zookeeper
 
 # Set environment variables for Kafka version and home directory
 ENV KAFKA_VERSION=3.4.1 \
@@ -30,7 +31,7 @@ EXPOSE 9092
 # Set working dir
 WORKDIR ${KAFKA_HOME}
 
-# Copy Kafka config file
+# Copy config file
 COPY /server.properties ${KAFKA_HOME}/config/server.properties
 
 # Define entrypoint to start Kafka
