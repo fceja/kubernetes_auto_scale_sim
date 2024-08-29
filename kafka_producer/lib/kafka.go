@@ -41,6 +41,7 @@ func pollForKafkaConnection(brokerAddresses []string, config *sarama.Config) sar
 func AddMessageToTopic(client *KafkaProducerClient, message Message, topicName string) error {
 	jsonMessage, err := json.Marshal(message)
 	if err != nil {
+
 		return err
 	}
 	_, _, err = client.Producer.SendMessage(&sarama.ProducerMessage{
@@ -49,6 +50,8 @@ func AddMessageToTopic(client *KafkaProducerClient, message Message, topicName s
 	})
 	if err != nil {
 		zap.L().Error("Failed to send message to kafka.", zap.Error(err))
+
+		return err
 	}
 
 	return nil
