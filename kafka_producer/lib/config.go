@@ -49,10 +49,10 @@ func convertStrToMap(secretStr string) map[string]string {
 }
 
 // Load env vars via docker swarm - https://docs.docker.com/engine/swarm/
-func loadDockerEnvConfig() Config {
+func loadDockerEnvConfig(envConfigPath string) Config {
 	fmt.Println("\nAttempting to load docker config via docker swarm.")
 
-	secretData, err := os.ReadFile("/run/secrets/environment_variables")
+	secretData, err := os.ReadFile(envConfigPath)
 	if err != nil {
 		panic(fmt.Sprintf("\nStack enabled? Error: %v", err))
 	}
@@ -102,14 +102,15 @@ func validateConfig(config Config) {
 }
 
 // Allows program to determine whether it is being ran locally or within a docker container
-// It then formats/loads environment variables
+// It then loads environment variables
 func LoadConfig() Config {
 	var envConfig Config
 
 	envConfigPath := ".env"
 	_, envFileErr := os.ReadFile(envConfigPath)
 	if envFileErr != nil {
-		envConfig = loadDockerEnvConfig()
+		const dockerSwarmSecretsPath = "/run/secrets/kafka-producer-secrets"
+		envConfig = loadDockerEnvConfig(dockerSwarmSecretsPath)
 	} else {
 		envConfig = loadLocalEnvConfig()
 	}
