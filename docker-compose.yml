@@ -1,23 +1,23 @@
 version: "3.8"
 services:
   zookeeper:
-    image: zookeeper-3.9.2
     deploy:
       replicas: 1
       restart_policy:
         condition: none
+    image: zookeeper-3.9.2
+    networks:
+      - kafka-net
     ports:
       - "2181:2181"
   kafka-server:
-    image: kafka-3.4.1-server
+    depends_on:
+      - zookeeper
     deploy:
       replicas: 1
       restart_policy:
         condition: none
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
+    image: kafka-3.4.1-server
     environment:
       KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka-server:9093,OUTSIDE://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
@@ -25,37 +25,52 @@ services:
       KAFKA_LISTENER_NAME: INSIDE
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+    networks:
+      - kafka-net
+    ports:
+      - "9092:9092"
   kafka-producer:
-    image: kafka-3.4.1-producer
+    depends_on:
+      - kafka-server
     deploy:
       replicas: 1
       restart_policy:
         condition: none
+    image: kafka-3.4.1-producer
+    networks:
+      - kafka-net
     secrets:
       - kafka-producer-secrets
   kafka-worker:
-    image: kafka-3.4.1-worker
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: none
-    secrets:
-      - kafka-worker-secrets
-  kafdrop: # Optional
-    image: ciscoceja/kafdrop:4.0.3 # based off of obsidiandynamics/kafdrop
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: none
-    ports:
-      - "9000:9000"
-    environment:
-      KAFKA_BROKERCONNECT: kafka-server:9093
     depends_on:
       - kafka-server
-
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+    image: kafka-3.4.1-worker
+    networks:
+      - kafka-net
+    secrets:
+      - kafka-worker-secrets
+  kafdrop-server: # Optional
+    depends_on:
+      - kafka-server
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+    environment:
+      KAFKA_BROKERCONNECT: "kafka-server:9093"
+    image: ciscoceja/kafdrop:4.0.3 # based off of obsidiandynamics/kafdrop
+    networks:
+      - kafka-net
+    ports:
+      - "9000:9000"
 secrets:
   kafka-producer-secrets:
     external: true
   kafka-worker-secrets:
     external: true
+networks:
+  kafka-net:

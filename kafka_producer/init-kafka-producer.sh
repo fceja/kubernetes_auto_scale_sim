@@ -32,6 +32,6 @@ echo -e "$filePath Done."
 # Run producer
 echo -e "$filePath Starting Kafka producer."
 ./kafka-producer &
+KAFKA_PRODUCER=$!
 
-# TODO - Terminate after completing tasks?
-wait
+wait $KAFKA_PRODUCER

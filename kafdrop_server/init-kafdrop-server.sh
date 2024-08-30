@@ -20,18 +20,9 @@ while ! nc -zv "${KAFKA_HOSTNAME}" "${KAFKA_SERVER_PORT}" 2>/dev/null; do
     sleep $waitTime
 done
 echo -e "$filePath Kafka connection successful."
+echo -e "$filePath Starting Kafdrop server."
 
-# Remove netcat-openbsd since no longer needed
-echo -e "$filePath Cleaning up."
-apt-get remove -y netcat-openbsd >/dev/null 2>&1 &&
-    apt-get autoremove -y >/dev/null 2>&1 &&
-    apt-get clean >/dev/null 2>&1 &&
-    rm -rf /var/lib/apt/lists/* >/dev/null 2>&1
-echo -e "$filePath Done."
+./kafdrop.sh &
+KAFDROP_PID=$!
 
-# Start Kafka worker
-echo -e "$filePath Starting Kafka worker."
-./kafka-worker &
-KAFKA_WORKER_PID=$!
-
-wait $KAFKA_WORKER_PID
+wait $KAFDROP_PID
