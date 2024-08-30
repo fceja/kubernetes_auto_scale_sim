@@ -33,4 +33,5 @@ echo -e "$filePath Done."
 echo -e "$filePath Starting Kafka producer."
 ./kafka-producer &
 
-wait # NOTE - Do we want want producer to run, or terminate after completing tasks?
+# TODO - Terminate after completing tasks?
+wait

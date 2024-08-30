@@ -19,20 +19,28 @@ services:
     ports:
       - "9092:9092"
     environment:
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,OUTSIDE://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka-server:9093,OUTSIDE://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
       KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
       KAFKA_LISTENER_NAME: INSIDE
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-  kafka_producer:
+  kafka-producer:
     image: kafka-3.4.1-producer
     deploy:
       replicas: 1
       restart_policy:
         condition: none
     secrets:
-      - environment_variables
+      - kafka-producer-secrets
+  kafka-worker:
+    image: kafka-3.4.1-worker
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
+    secrets:
+      - kafka-worker-secrets
   kafdrop: # Optional
     image: ciscoceja/kafdrop:4.0.3 # based off of obsidiandynamics/kafdrop
     deploy:
@@ -42,9 +50,12 @@ services:
     ports:
       - "9000:9000"
     environment:
-      KAFKA_BROKERCONNECT: kafka:9093
+      KAFKA_BROKERCONNECT: kafka-server:9093
     depends_on:
-      - kafka
+      - kafka-server
+
 secrets:
-  environment_variables:
+  kafka-producer-secrets:
+    external: true
+  kafka-worker-secrets:
     external: true

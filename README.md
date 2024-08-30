@@ -60,7 +60,8 @@ We need to add terminal ran `kafka-producer` and `kafka-worker` to the network
 1. Identify Swarm Network
 
 - Look for network associated with your stack (e.g. `stackname_default`)
-  - `docker network ls`
+
+- `docker network ls`
 
 2. Find IP Address of the Containers
 
