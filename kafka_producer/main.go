@@ -46,7 +46,7 @@ func main() {
 		err := lib.AddMessageToTopic(producerClient, sendMessage, config.TopicName)
 		if err != nil {
 			if attemptCount < limit {
-				zap.L().Warn(fmt.Sprintf("Re-attempting in %v seconds. %v attempt(s) left.", retryWait.Seconds(), limit-attemptCount))
+				zap.L().Warn(fmt.Sprintf("Trying again in '%v' seconds. '%v' attempt(s) left.", retryWait.Seconds(), limit-attemptCount))
 
 				time.Sleep(retryWait)
 
@@ -57,11 +57,14 @@ func main() {
 			break
 		}
 
-		zap.L().Info("Message added to topic.")
 		attemptCount = 0 // reset
-
-		// sleep
-		zap.L().Info(fmt.Sprintf("Sleep for %v.", config.SleepTimeout))
+		zap.L().Debug(
+			fmt.Sprintf("Message added to '%v' topic.", config.TopicName),
+			zap.String("sleep", config.SleepTimeout.String()),
+		)
 		time.Sleep(config.SleepTimeout)
+
 	}
+
+	zap.L().Info("Message limit reached. Exiting.")
 }

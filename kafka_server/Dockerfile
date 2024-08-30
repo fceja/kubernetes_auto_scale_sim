@@ -1,4 +1,16 @@
-# Official Images for OpenJDK binaries, built by Eclipse Temurin.
+# Stage 1: Build Go binary
+FROM arm64v8/golang:alpine3.19 AS builder
+
+# Set working directory inside temp container
+WORKDIR /app
+
+# Copy source code into container
+COPY . .
+
+# Build Go binary
+RUN go build -o onstart_create_topics main.go
+
+# Stage 2: OpenJDK binaries
 FROM arm64v8/eclipse-temurin:22.0.2_9-jdk
 
 # NOTE - Kafka 3.4.1 supports zookeeper 3.9.2
@@ -7,9 +19,9 @@ FROM arm64v8/eclipse-temurin:22.0.2_9-jdk
 # Set environment variables
 ENV KAFKA_VERSION=3.4.1 \
     SCALA_VERSION=2.13 \
-    KAFKA_HOME=/opt/kafka \
-    KAFKA_DATA_DIR=/var/lib/kafka/data \
-    KAFKA_LOG_DIR=/var/lib/kafka/logs \
+    KAFKA_HOME=/app \
+    KAFKA_DATA_DIR=/app/data \
+    KAFKA_LOG_DIR=/app/logs \
     KAFKA_HOSTNAME=localhost \
     KAFKA_SERVER_PORT=9093 \
     ZOOKEEPER_HOSTNAME=zookeeper \
@@ -27,21 +39,27 @@ RUN apt-get update && apt-get install -y wget curl gnupg netcat-openbsd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Set working dir
+WORKDIR ${KAFKA_HOME}
+
 # Create directories for Kafka data and logs
 RUN mkdir -p ${KAFKA_DATA_DIR} ${KAFKA_LOG_DIR}
 
 # Expose Kafka port
 EXPOSE 9092
 
-# Set working dir
-WORKDIR ${KAFKA_HOME}
+# Copy Go binary from builder stage
+# COPY --from=builder /app/onstart_create_topics .
+COPY --from=builder /app/onstart_create_topics .
 
-# Copy config file
+# Copy Kafka server config file
 COPY /server.properties ${KAFKA_HOME}/config/server.properties
 
-# Copy init script
-COPY init-kafka-server.sh /usr/local/bin/init-kafka-server.sh
-RUN chmod +x /usr/local/bin/init-kafka-server.sh
+# Copy init script and make executable
+# COPY init-kafka-server.sh /usr/local/bin/init-kafka-server.sh
+COPY init-kafka-server.sh .
+# RUN chmod +x /usr/local/bin/init-kafka-server.sh
+RUN chmod +x init-kafka-server.sh
 
 # Define entrypoint to Kafka server init script
-ENTRYPOINT ["/usr/local/bin/init-kafka-server.sh"]
+ENTRYPOINT ["sh", "-c", "/${KAFKA_HOME}/init-kafka-server.sh"]
