@@ -13,7 +13,7 @@ waitTime=2
 while ! nc -zv "${KAFKA_HOSTNAME}" "${KAFKA_SERVER_PORT}" 2>/dev/null; do
     attempt=$((attempt + 1))
     if [ "$attempt" -gt "$maxAttempts" ]; then
-        echo "Failed to connect to Kafka server at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'. Exiting."
+        echo -e "Failed to connect to Kafka server at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'. Exiting."
         exit 1
     fi
     echo -e "$filePath Attempting to connect..."

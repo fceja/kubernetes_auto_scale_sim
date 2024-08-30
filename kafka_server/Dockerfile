@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Build Go binary
-RUN go build -o onstart_create_topics main.go
+RUN go build -o main main.go
 
 # Stage 2: OpenJDK binaries
 FROM arm64v8/eclipse-temurin:22.0.2_9-jdk
@@ -22,8 +22,10 @@ ENV KAFKA_VERSION=3.4.1 \
     KAFKA_HOME=/app \
     KAFKA_DATA_DIR=/app/data \
     KAFKA_LOG_DIR=/app/logs \
-    KAFKA_HOSTNAME=localhost \
-    KAFKA_SERVER_PORT=9093 \
+    KAFKA_INSIDE_HOSTNAME=kafka-server \
+    KAFKA_INSIDE_SERVER_PORT=9093 \
+    KAFKA_OUTSIDE_HOSTNAME=localhost \
+    KAFKA_OUTSIDE_SERVER_PORT=9092 \
     ZOOKEEPER_HOSTNAME=zookeeper \
     ZOOKEEPER_SERVER_PORT=2181 \
     INIT_FILE_PATH=init-kafka-server.sh
@@ -50,15 +52,13 @@ EXPOSE 9092
 
 # Copy Go binary from builder stage
 # COPY --from=builder /app/onstart_create_topics .
-COPY --from=builder /app/onstart_create_topics .
+COPY --from=builder /app .
 
 # Copy Kafka server config file
 COPY /server.properties ${KAFKA_HOME}/config/server.properties
 
 # Copy init script and make executable
-# COPY init-kafka-server.sh /usr/local/bin/init-kafka-server.sh
 COPY init-kafka-server.sh .
-# RUN chmod +x /usr/local/bin/init-kafka-server.sh
 RUN chmod +x init-kafka-server.sh
 
 # Define entrypoint to Kafka server init script

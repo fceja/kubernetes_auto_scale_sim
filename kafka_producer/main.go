@@ -31,7 +31,7 @@ func main() {
 
 	// create and add messages to topic until retryLimit reached
 	var attemptCount = 0
-	var limit = 2
+	var limit = 4
 	var retryWait time.Duration = 5 * time.Second
 
 	for i := 0; i < config.MessageLimit; i++ {
@@ -53,7 +53,7 @@ func main() {
 				attemptCount++
 				continue
 			}
-			zap.L().Error("Retry limit reached, exiting.")
+			zap.L().Fatal("Retry limit reached, exiting.")
 			break
 		}
 

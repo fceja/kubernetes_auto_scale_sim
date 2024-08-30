@@ -18,10 +18,10 @@ waitTime=2
 while ! nc -zv "${ZOOKEEPER_HOSTNAME}" "${ZOOKEEPER_SERVER_PORT}" 2>/dev/null; do
     attempt=$((attempt + 1))
     if [ "$attempt" -ge "$maxAttempts" ]; then
-        echo "$filePath Zookeeper failed to load. Exiting."
+        echo -e "$filePath Zookeeper failed to load. Exiting."
         exit 1
     fi
-    echo "$filePath Loading..."
+    echo -e "$filePath Loading..."
     sleep $waitTime
 done
 echo -e "$filePath Zookeeper is ready at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'."

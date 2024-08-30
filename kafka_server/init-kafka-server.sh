@@ -11,50 +11,59 @@ waitTime=2
 
 echo -e "$filePath Waiting for Zookeeper availability at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'."
 while ! nc -zv "${ZOOKEEPER_HOSTNAME}" "${ZOOKEEPER_SERVER_PORT}" 2>/dev/null; do
-  attempt=$((attempt + 1))
-  if [ "$attempt" -ge "$maxAttempts" ]; then
-    echo "$filePath Failed to connect to Zookeeper at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'. Exiting."
-    exit 1
-  fi
-  echo "$filePath Attempting to connect..."
-  sleep $waitTime
+    attempt=$((attempt + 1))
+    if [ "$attempt" -ge "$maxAttempts" ]; then
+        echo -e "$filePath Failed to connect to Zookeeper at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'. Exiting."
+        exit 1
+    fi
+    echo -e "$filePath Attempting to connect..."
+    sleep $waitTime
 done
 echo -e "$filePath Connected to Zookeeper."
 
 # Start Kafka server
-# NOTE - inside 9093, outside 9092
-echo -e "$filePath Starting Kafka server at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'."
+echo -e "$filePath Starting Kafka server."
 ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server.properties &
-KAFKA_PID=$! # save PID
+KAFKA_PID=$!
 
 # Wait for Kafka server to be ready
 maxAttempts=10
 attempt=0
 
-while ! nc -zv "${KAFKA_HOSTNAME}" "${KAFKA_SERVER_PORT}" 2>/dev/null; do
-  attempt=$((attempt + 1))
-  if [ "$attempt" -gt "$maxAttempts" ]; then
-    echo "Kafka server failed to load. Exiting."
-    exit 1
-  fi
-  echo -e "$filePath Loading..."
-  sleep $waitTime
+# Check if inside port ready
+while ! nc -zv "${KAFKA_INSIDE_HOSTNAME}" "${KAFKA_INSIDE_SERVER_PORT}" 2>/dev/null; do
+    attempt=$((attempt + 1))
+    if [ "$attempt" -gt "$maxAttempts" ]; then
+        echo -e "Kafka server failed to start INSIDE listening port. Exiting."
+        exit 1
+    fi
+    echo -e "$filePath Loading..."
+    sleep $waitTime
 done
-echo -e "$filePath Kafka server is ready at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'."
 
-# Create Kafka topic(s)
-echo -e "$filePath Creating topic(s) in Kafka server."
-${KAFKA_HOME}/bin/kafka-topics.sh --create --bootstrap-server ${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT} --replication-factor 1 --partitions 1 --topic example_topic_1
-${KAFKA_HOME}/bin/kafka-topics.sh --create --bootstrap-server ${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT} --replication-factor 1 --partitions 1 --topic example_topic_2
-echo -e "$filePath Topic(s) have been created."
+# Check if outside port ready
+while ! nc -zv "${KAFKA_OUTSIDE_HOSTNAME}" "${KAFKA_OUTSIDE_SERVER_PORT}" 2>/dev/null; do
+    attempt=$((attempt + 1))
+    if [ "$attempt" -gt "$maxAttempts" ]; then
+        echo -e "Kafka server failed to load OUTSIDE listening port. Exiting."
+        exit 1
+    fi
+    echo -e "$filePath Loading..."
+    sleep $waitTime
+done
+echo -e "$filePath Kafka server is ready. - INSIDE: '${KAFKA_INSIDE_HOSTNAME}:${KAFKA_INSIDE_SERVER_PORT}' OUTSIDE: '${KAFKA_OUTSIDE_HOSTNAME}:${KAFKA_OUTSIDE_SERVER_PORT}'"
 
 # Remove netcat-openbsd since no longer needed
 echo -e "$filePath Cleaning up."
 apt-get remove -y netcat-openbsd >/dev/null 2>&1 &&
-  apt-get autoremove -y >/dev/null 2>&1 &&
-  apt-get clean >/dev/null 2>&1 &&
-  rm -rf /var/lib/apt/lists/* >/dev/null 2>&1
+    apt-get autoremove -y >/dev/null 2>&1 &&
+    apt-get clean >/dev/null 2>&1 &&
+    rm -rf /var/lib/apt/lists/* >/dev/null 2>&1
 echo -e "$filePath Done."
+
+# Create topics on Kafka server start
+echo -e "$filePath Executing './main'"
+./main
 
 # Keep Kafka server process running
 wait $KAFKA_PID

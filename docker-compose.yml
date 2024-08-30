@@ -29,6 +29,8 @@ services:
       - kafka-net
     ports:
       - "9092:9092"
+    secrets:
+      - kafka-server-secrets
   kafka-producer:
     depends_on:
       - kafka-server
@@ -68,6 +70,8 @@ services:
     ports:
       - "9000:9000"
 secrets:
+  kafka-server-secrets:
+    external: true
   kafka-producer-secrets:
     external: true
   kafka-worker-secrets:

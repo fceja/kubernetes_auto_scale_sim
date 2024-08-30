@@ -2,7 +2,6 @@ package lib
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"reflect"
 	"strings"
@@ -22,17 +21,17 @@ func convertStrToMap(secretStr string) map[string]string {
 	lines := strings.Split(secretStr, "\n")
 	newMap := make(map[string]string)
 
-	// Parse each line and extract key-value pairs
+	// extract key-value pairs
 	for _, line := range lines {
 		// skip empty lines
 		if line == "" {
 			continue
 		}
 
-		// split line into key and value by '='
+		// split into key and value, by '='
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) != 2 {
-			panic(fmt.Sprintln("Malformed line:", line))
+			panic(fmt.Sprintln("\nMalformed line:", line))
 		}
 
 		key := strings.TrimSpace(parts[0])
@@ -58,15 +57,14 @@ func isEmptyValue(v reflect.Value) bool {
 		// If the slice length is 1, check if it contains an empty value
 		if v.Len() == 1 {
 			elem := v.Index(0) // Get the first element of the slice
-			fmt.Printf("First element: %v, IsZero: %v\n", elem, elem.IsZero())
-			return elem.IsZero() // Check if the first element is the zero value
+			return elem.IsZero()
 		}
 
 		// For slices with more than one element, just check if all are zero values
 		for i := 0; i < v.Len(); i++ {
 			elem := v.Index(i)
 			if !elem.IsZero() {
-				return false // If any element is not zero, return false
+				return false
 			}
 		}
 		return true
@@ -85,9 +83,9 @@ func validateConfig(config Config) {
 		nilConfigFieldType := configReflectTyp.Field(i).Name
 		configField := configReflect.Field(i)
 
-		// Check if config fields are missing or empty
+		// check if config fields are missing or empty
 		if isEmptyValue(configField) {
-			log.Fatalf("\nMissing or empty config env var: '%v'", nilConfigFieldType)
+			panic(fmt.Sprintf("\nMissing or empty config env var: '%v'", nilConfigFieldType))
 		}
 	}
 }
@@ -95,11 +93,10 @@ func validateConfig(config Config) {
 // Section: Load env vars for Docker or Local
 // Load env vars via docker swarm - https://docs.docker.com/engine/swarm/
 func loadDockerEnvConfig(envConfigPath string) Config {
-	fmt.Println("\nAttempting to load docker config via docker swarm.")
-
+	fmt.Println("Loading docker swarm config.")
 	secretData, err := os.ReadFile(envConfigPath)
 	if err != nil {
-		panic(fmt.Sprintf("\nStack enabled? Error: %v", err))
+		panic(fmt.Sprintf("\nSwarm initialized? Stack enabled? Error: %v", err))
 	}
 
 	// convert to map
@@ -114,6 +111,7 @@ func loadDockerEnvConfig(envConfigPath string) Config {
 
 // Load env vars from local .env file
 func loadLocalEnvConfig() Config {
+	fmt.Println("Loading local config.")
 	err := godotenv.Load()
 	if err != nil {
 		panic(err)
@@ -126,9 +124,9 @@ func loadLocalEnvConfig() Config {
 	}
 }
 
-// Section: main
-// First, determines whether running locally or within a docker container
-// Then, loads respective environment variables
+// Section: Main
+// First, determine whether running locally or within a docker container
+// Then, load respective env vars
 func LoadConfig() Config {
 	var envConfig Config
 
