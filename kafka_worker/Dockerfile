@@ -10,7 +10,7 @@ COPY . .
 # Build Go binary
 RUN go build -o kafka-worker main.go
 
-# Stage 2: Create a minimal image to run Go binary
+# Stage 2: Create minimal image to run Go binary
 FROM arm64v8/alpine:3.19
 
 # Set working directory inside final container

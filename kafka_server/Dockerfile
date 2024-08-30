@@ -36,9 +36,12 @@ EXPOSE 9092
 # Set working dir
 WORKDIR ${KAFKA_HOME}
 
-# Copy config file and init script
+# Copy config file
 COPY /server.properties ${KAFKA_HOME}/config/server.properties
-COPY init-kafka-server.sh /usr/local/bin/init-kafka-server.sh
 
-# Run Kafka server startup script
+# Copy init script
+COPY init-kafka-server.sh /usr/local/bin/init-kafka-server.sh
+RUN chmod +x /usr/local/bin/init-kafka-server.sh
+
+# Define entrypoint to Kafka server init script
 ENTRYPOINT ["/usr/local/bin/init-kafka-server.sh"]
