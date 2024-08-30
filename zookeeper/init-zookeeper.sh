@@ -24,7 +24,7 @@ while ! nc -zv "${ZOOKEEPER_HOSTNAME}" "${ZOOKEEPER_SERVER_PORT}" 2>/dev/null; d
     echo "$filePath Loading..."
     sleep $waitTime
 done
-echo -e "$filePath Zookeeper is ready at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'"
+echo -e "$filePath Zookeeper is ready at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'."
 
 # Remove netcat-openbsd since no longer needed
 echo -e "$filePath Cleaning up."

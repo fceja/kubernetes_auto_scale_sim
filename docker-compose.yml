@@ -62,7 +62,7 @@ services:
         condition: none
     environment:
       KAFKA_BROKERCONNECT: "kafka-server:9093"
-    image: ciscoceja/kafdrop:4.0.3 # based off of obsidiandynamics/kafdrop
+    image: kafdrop-4.0.3-snapshot
     networks:
       - kafka-net
     ports:

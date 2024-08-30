@@ -15,7 +15,7 @@ FROM arm64v8/alpine:3.19
 
 # Set environment variables
 ENV KAFKA_HOSTNAME=kafka-server \
-    KAFKA_SERVER_PORT=9092 \
+    KAFKA_SERVER_PORT=9093 \
     INIT_FILE_PATH=init-kafka-worker.sh
 
 # Set working directory inside final container

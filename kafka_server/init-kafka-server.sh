@@ -9,7 +9,7 @@ maxAttempts=10
 attempt=0
 waitTime=2
 
-echo -e "$filePath Waiting for Zookeeper availability at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'"
+echo -e "$filePath Waiting for Zookeeper availability at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'."
 while ! nc -zv "${ZOOKEEPER_HOSTNAME}" "${ZOOKEEPER_SERVER_PORT}" 2>/dev/null; do
   attempt=$((attempt + 1))
   if [ "$attempt" -ge "$maxAttempts" ]; then
@@ -22,7 +22,8 @@ done
 echo -e "$filePath Connected to Zookeeper."
 
 # Start Kafka server
-echo -e "$filePath Starting Kafka server at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'"
+# NOTE - inside 9093, outside 9092
+echo -e "$filePath Starting Kafka server at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'."
 ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server.properties &
 KAFKA_PID=$! # save PID
 
@@ -39,7 +40,7 @@ while ! nc -zv "${KAFKA_HOSTNAME}" "${KAFKA_SERVER_PORT}" 2>/dev/null; do
   echo -e "$filePath Loading..."
   sleep $waitTime
 done
-echo -e "$filePath Kafka server is ready at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'"
+echo -e "$filePath Kafka server is ready at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'."
 
 # Create Kafka topic(s)
 echo -e "$filePath Creating topic(s) in Kafka server."
