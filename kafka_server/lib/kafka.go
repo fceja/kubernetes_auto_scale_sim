@@ -41,8 +41,7 @@ func CreateTopic(config Config, client sarama.Client, topicName string) {
 
 	// define the topic details
 	topicDetail := sarama.TopicDetail{
-		// TODO - make dynamic per topic
-		NumPartitions:     4,
+		NumPartitions:     1,
 		ReplicationFactor: 1,
 	}
 

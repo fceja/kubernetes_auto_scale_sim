@@ -59,7 +59,7 @@ func main() {
 
 		attemptCount = 0 // reset
 		zap.L().Debug(
-			fmt.Sprintf("Message added to '%v' topic.", config.TopicName),
+			fmt.Sprintf("Message added to topic - '%v'.", config.TopicName),
 			zap.String("sleep", config.SleepTimeout.String()),
 		)
 		time.Sleep(config.SleepTimeout)

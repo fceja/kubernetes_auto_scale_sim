@@ -50,7 +50,7 @@ func convertStrToMap(secretStr string) map[string]string {
 
 // Load env vars via docker swarm - https://docs.docker.com/engine/swarm/
 func loadDockerEnvConfig(envConfigPath string) Config {
-	fmt.Println("\nAttempting to load docker config via docker swarm.")
+	fmt.Print("Loading docker config via docker swarm.\n")
 
 	secretData, err := os.ReadFile(envConfigPath)
 	if err != nil {
@@ -73,6 +73,8 @@ func loadDockerEnvConfig(envConfigPath string) Config {
 
 // Load env vars from local .env file
 func loadLocalEnvConfig() Config {
+	fmt.Print("Loading local .env file.\n")
+
 	err := godotenv.Load()
 	if err != nil {
 		panic(err)

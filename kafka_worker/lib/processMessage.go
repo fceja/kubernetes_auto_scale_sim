@@ -10,7 +10,7 @@ import (
 
 // Process message.
 func ProcessMessage(msg *sarama.ConsumerMessage) {
-	zap.L().Debug("Processing claims message.",
+	zap.L().Debug("Processing claim message.",
 		zap.String("sleeping", fmt.Sprintf("%v", 5*time.Second)),
 		zap.String("partition", fmt.Sprintf("%+v", msg.Partition)),
 		zap.String("offset", fmt.Sprintf("%+v", msg.Offset)),

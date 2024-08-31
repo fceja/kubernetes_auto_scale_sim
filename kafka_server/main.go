@@ -51,7 +51,7 @@ func main() {
 	}
 
 	// create kafka topic
-	var topicName string = "example-topic-2"
+	var topicName string = "example-topic-1"
 
 	// if topic does not exist, create
 	exists := lib.TopicExists(client, topicName)

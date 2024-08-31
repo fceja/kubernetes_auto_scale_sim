@@ -7,7 +7,7 @@ filePath="${GREEN}${INIT_FILE_PATH}${RESET} -"
 # Connect to Zookeeper
 maxAttempts=10
 attempt=0
-waitTime=2
+waitTime=3
 
 echo -e "$filePath Waiting for Zookeeper availability at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'."
 while ! nc -zv "${ZOOKEEPER_HOSTNAME}" "${ZOOKEEPER_SERVER_PORT}" 2>/dev/null; do
@@ -23,6 +23,8 @@ echo -e "$filePath Connected to Zookeeper."
 
 # Start Kafka server
 echo -e "$filePath Starting Kafka server."
+
+# Display the contents of the server.properties file
 ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server.properties &
 KAFKA_PID=$!
 
@@ -51,7 +53,7 @@ while ! nc -zv "${KAFKA_OUTSIDE_HOSTNAME}" "${KAFKA_OUTSIDE_SERVER_PORT}" 2>/dev
     echo -e "$filePath Loading..."
     sleep $waitTime
 done
-echo -e "$filePath Kafka server is ready. - INSIDE: '${KAFKA_INSIDE_HOSTNAME}:${KAFKA_INSIDE_SERVER_PORT}' OUTSIDE: '${KAFKA_OUTSIDE_HOSTNAME}:${KAFKA_OUTSIDE_SERVER_PORT}'"
+echo -e "$filePath Kafka server is ready - INSIDE: '${KAFKA_INSIDE_HOSTNAME}:${KAFKA_INSIDE_SERVER_PORT}' OUTSIDE: '${KAFKA_OUTSIDE_HOSTNAME}:${KAFKA_OUTSIDE_SERVER_PORT}'."
 
 # Remove netcat-openbsd since no longer needed
 echo -e "$filePath Cleaning up."

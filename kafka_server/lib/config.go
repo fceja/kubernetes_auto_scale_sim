@@ -93,7 +93,7 @@ func validateConfig(config Config) {
 // Section: Load env vars for Docker or Local
 // Load env vars via docker swarm - https://docs.docker.com/engine/swarm/
 func loadDockerEnvConfig(envConfigPath string) Config {
-	fmt.Println("Loading docker swarm config.")
+	fmt.Print("Loading docker swarm config.\n")
 	secretData, err := os.ReadFile(envConfigPath)
 	if err != nil {
 		panic(fmt.Sprintf("\nSwarm initialized? Stack enabled? Error: %v", err))
@@ -111,7 +111,7 @@ func loadDockerEnvConfig(envConfigPath string) Config {
 
 // Load env vars from local .env file
 func loadLocalEnvConfig() Config {
-	fmt.Println("Loading local config.")
+	fmt.Print("Loading local config.\n")
 	err := godotenv.Load()
 	if err != nil {
 		panic(err)

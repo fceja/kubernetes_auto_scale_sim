@@ -10,8 +10,41 @@ import (
 
 type MyConsumer struct{}
 
+// Checks if slice contains item
+func contains(slice []string, item string) bool {
+	for _, elem := range slice {
+		if elem == item {
+			return true
+		}
+	}
+	return false
+}
+
+// Check if kafka topic already exists
+func CheckIfTopicExists(client sarama.Client, topicName string) bool {
+	zap.L().Info("Checking if topic exists.")
+	topics, err := client.Topics()
+	if err != nil {
+		zap.L().Fatal("Error retrieving topics.", zap.Error(err))
+	}
+	zap.L().Debug("Topics available.",
+		zap.Strings("topics", topics),
+	)
+
+	var exists bool = contains(topics, topicName)
+
+	if exists {
+		zap.L().Info(fmt.Sprintf("Topic '%v' exists.", topicName))
+	} else {
+		zap.L().Error(fmt.Sprintf("Topic '%v' does not exist.", topicName))
+	}
+
+	return exists
+}
+
 // Create consumer group.
 func CreateConsumerGroup(consumerGroupId string, client sarama.Client) sarama.ConsumerGroup {
+	zap.L().Debug("Creating consumer group.")
 	consumerGroup, err := sarama.NewConsumerGroupFromClient(consumerGroupId, client)
 	if err != nil {
 		zap.L().Fatal("Failed creating consumer group.", zap.Error(err))
@@ -57,7 +90,7 @@ func pollForKafkaConnection(brokerAddresses []string, config *sarama.Config) sar
 		client, err = sarama.NewClient(brokerAddresses, config)
 		if err != nil {
 			zap.L().Error("Failed to connect to Kafka.", zap.Error(err))
-			time.Sleep(10 * time.Second)
+			time.Sleep(3 * time.Second)
 			continue
 		}
 		break
@@ -68,6 +101,8 @@ func pollForKafkaConnection(brokerAddresses []string, config *sarama.Config) sar
 
 // Create kafka client.
 func InitKafkaClient(config Config) sarama.Client {
+	zap.L().Debug("Creating sarama Kafka client.")
+
 	// create sarama config
 	saramaConfig := sarama.NewConfig()
 	saramaConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
