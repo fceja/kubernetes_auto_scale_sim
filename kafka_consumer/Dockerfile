@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Build Go binary
-RUN go build -o kafka-worker main.go
+RUN go build -o kafka-consumer main.go
 
 # Stage 2: Create minimal image to run Go binary
 FROM arm64v8/alpine:3.19
@@ -16,7 +16,7 @@ FROM arm64v8/alpine:3.19
 # Set environment variables
 ENV KAFKA_HOSTNAME=kafka-server \
     KAFKA_SERVER_PORT=9093 \
-    INIT_FILE_PATH=init-kafka-worker.sh
+    INIT_FILE_PATH=init-kafka-consumer.sh
 
 # Set working directory inside final container
 WORKDIR /app
@@ -25,8 +25,8 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates netcat-openbsd
 
 # Copy Go binary from builder stage into new instance
-COPY --from=builder /app/kafka-worker .
-COPY init-kafka-worker.sh .
+COPY --from=builder /app/kafka-consumer .
+COPY init-kafka-consumer.sh .
 
-# Run Kafka worker startup script
-ENTRYPOINT ["sh", "/app/init-kafka-worker.sh"]
+# Run Kafka consumer startup script
+ENTRYPOINT ["sh", "/app/init-kafka-consumer.sh"]

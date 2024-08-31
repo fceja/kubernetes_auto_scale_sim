@@ -1,4 +1,4 @@
-module kafka_worker
+module kafka_consumer
 
 go 1.22.5
 

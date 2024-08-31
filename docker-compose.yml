@@ -43,18 +43,18 @@ services:
       - kafka-net
     secrets:
       - kafka-producer-secrets
-  kafka-worker:
+  kafka-consumer:
     depends_on:
       - kafka-server
     deploy:
       replicas: 1
       restart_policy:
         condition: none
-    image: kafka-3.4.1-worker
+    image: kafka-3.4.1-consumer
     networks:
       - kafka-net
     secrets:
-      - kafka-worker-secrets
+      - kafka-consumer-secrets
   kafdrop-server: # Optional
     depends_on:
       - kafka-server
@@ -74,7 +74,7 @@ secrets:
     external: true
   kafka-producer-secrets:
     external: true
-  kafka-worker-secrets:
+  kafka-consumer-secrets:
     external: true
 networks:
   kafka-net:

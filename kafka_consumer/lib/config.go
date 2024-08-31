@@ -107,7 +107,7 @@ func LoadConfig() Config {
 	envConfigPath := ".env"
 	_, envFileErr := os.ReadFile(envConfigPath)
 	if envFileErr != nil {
-		const dockerSwarmSecretsPath = "/run/secrets/kafka-worker-secrets"
+		const dockerSwarmSecretsPath = "/run/secrets/kafka-consumer-secrets"
 		envConfig = loadDockerEnvConfig(dockerSwarmSecretsPath)
 	} else {
 		envConfig = loadLocalEnvConfig()

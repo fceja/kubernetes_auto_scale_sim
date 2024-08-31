@@ -27,10 +27,10 @@
        docker build -t kafka-3.4.1-producer ./kafka_producer
       ```
 
-  - Kafka Worker
+  - Kafka Consumer
 
     - ```bash
-       docker build -t kafka-3.4.1-worker ./kafka_worker
+       docker build -t kafka-3.4.1-consumer ./kafka_consumer
       ```
 
   - Kafdrop Server
@@ -45,8 +45,8 @@
        docker build -t zookeeper-3.9.2 ./zookeeper \
        && docker build -t kafka-3.4.1-server ./kafka_server \
        && docker build -t kafka-3.4.1-producer ./kafka_producer \
-       && docker build -t kafka-3.4.1-worker ./kafka_worker \
-       docker build -t kafdrop-4.0.3-snapshot ./kafdrop_server
+       && docker build -t kafka-3.4.1-consumer ./kafka_consumer \
+       && docker build -t kafdrop-4.0.3-snapshot ./kafdrop_server
       ```
 
   - Deploy stack
@@ -56,11 +56,11 @@
        && docker stack deploy -c docker-compose.yml my_stack
       ```
 
-## Running Local Kafka Producer / Worker
+## Running Local Kafka Producer / Consumer
 
 Since Zookeepr and Kafka server are always ran in a docker container, they are are created via compose-docker stack and connect to the swarm managed network.
 
-We need to add terminal ran `kafka-producer` and `kafka-worker` to the network
+We need to add terminal ran `kafka-producer` and `kafka-consumer` to the network
 
 \*\* Note - localhost:9092 worked.
 

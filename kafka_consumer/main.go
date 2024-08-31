@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"kafka_worker/lib"
+	"kafka_consumer/lib"
 	"log"
 	"time"
 

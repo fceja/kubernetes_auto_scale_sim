@@ -29,9 +29,9 @@ apt-get remove -y netcat-openbsd >/dev/null 2>&1 &&
     rm -rf /var/lib/apt/lists/* >/dev/null 2>&1
 echo -e "$filePath Done."
 
-# Start Kafka worker
-echo -e "$filePath Starting Kafka worker."
-./kafka-worker &
-KAFKA_WORKER_PID=$!
+# Start Kafka consumer
+echo -e "$filePath Starting Kafka consumer."
+./kafka-consumer &
+KAFKA_CONSUMER_PID=$!
 
-wait $KAFKA_WORKER_PID
+wait $KAFKA_CONSUMER_PID
