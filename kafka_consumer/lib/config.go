@@ -19,67 +19,19 @@ type Config struct {
 }
 
 // Helper
-// Converts string to a map
-func convertStrToMap(secretStr string) map[string]string {
-	lines := strings.Split(secretStr, "\n")
-	newMap := make(map[string]string)
 
-	// Parse each line and extract key-value pairs
-	for _, line := range lines {
-		// skip empty lines
-		if line == "" {
-			continue
-		}
+// Section: Load env vars for Docker or Local
+func createConfig(isDocker bool) Config {
+	var brokerAddresses []string
 
-		// split line into key and value by '='
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) != 2 {
-			panic(fmt.Sprintln("Malformed line:", line))
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		newMap[key] = value
+	if isDocker {
+		brokerAddresses = strings.Split(os.Getenv("DOCKER_BROKER_ADDRESSES"), ",")
+	} else {
+		brokerAddresses = strings.Split(os.Getenv("LOCAL_BROKER_ADDRESSES"), ",")
 	}
-
-	return newMap
-}
-
-// Load env vars via docker swarm - https://docs.docker.com/engine/swarm/
-func loadDockerEnvConfig(envConfigPath string) Config {
-	fmt.Print("Loading docker config via docker swarm.\n")
-
-	secretData, err := os.ReadFile(envConfigPath)
-	if err != nil {
-		panic(fmt.Sprintf("\nStack enabled? Error: %v", err))
-	}
-
-	// convert to map
-	mapSecrets := convertStrToMap(string(secretData))
-
-	return Config{
-		AppEnv:          mapSecrets["APP_ENV"],
-		BrokerAddresses: strings.Split(mapSecrets["DOCKER_BROKER_ADDRESSES"], ","),
-		ConsumerGroupId: mapSecrets["CONSUMER_GROUP_ID"],
-		LogLevel:        mapSecrets["LOG_LEVEL"],
-		LogFilePath:     mapSecrets["LOG_FILE_PATH"],
-		TopicName:       mapSecrets["TOPIC_NAME"],
-	}
-}
-
-// Load env vars from local .env file
-func loadLocalEnvConfig() Config {
-	fmt.Print("Loading local .env file.\n")
-
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
-
 	return Config{
 		AppEnv:          os.Getenv("APP_ENV"),
-		BrokerAddresses: strings.Split(os.Getenv("LOCAL_BROKER_ADDRESSES"), ","),
+		BrokerAddresses: brokerAddresses,
 		ConsumerGroupId: os.Getenv("CONSUMER_GROUP_ID"),
 		LogLevel:        os.Getenv("LOG_LEVEL"),
 		LogFilePath:     os.Getenv("LOG_FILE_PATH"),
@@ -99,21 +51,36 @@ func validateConfig(config Config) {
 	}
 }
 
-// Allows program to determine whether it is being ran locally or within a docker container
-// It then loads environment variables
-func LoadConfig() Config {
-	var envConfig Config
+// Looks for docker specific file to determine
+// if running in a docker container
+func isRunningInDocker() bool {
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		fmt.Print("\nis running in docker.\n")
+		// exists, running in docker
+		return true
+	}
+	// does not exist, running locally
+	fmt.Print("\nis NOT running in docker.\n")
+	return false
+}
 
-	envConfigPath := ".env"
-	_, envFileErr := os.ReadFile(envConfigPath)
-	if envFileErr != nil {
-		const dockerSwarmSecretsPath = "/run/secrets/kafka-consumer-secrets"
-		envConfig = loadDockerEnvConfig(dockerSwarmSecretsPath)
+// Section: Main
+func LoadConfig() Config {
+	var config Config
+
+	if !isRunningInDocker() {
+		// load .env file
+		err := godotenv.Load()
+		if err != nil {
+			panic(err)
+		}
+		config = createConfig(false)
 	} else {
-		envConfig = loadLocalEnvConfig()
+		config = createConfig(true)
 	}
 
-	validateConfig(envConfig)
+	// validate config
+	validateConfig(config)
 
-	return envConfig
+	return config
 }

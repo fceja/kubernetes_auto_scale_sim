@@ -32,7 +32,7 @@ func main() {
 	// create and add messages to topic until retryLimit reached
 	var attemptCount = 0
 	var limit = 4
-	var retryWait time.Duration = 5 * time.Second
+	var retryWait time.Duration = 10 * time.Second
 
 	for i := 0; i < config.MessageLimit; i++ {
 		sendMessage := lib.Message{

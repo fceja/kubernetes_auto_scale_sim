@@ -17,39 +17,31 @@ func main() {
 	config := lib.LoadConfig()
 
 	// create zapLogger
-	// fmt.Println("\nCreating logger")
 	zapLogger, err := lib.SetupZapLogger(config)
 	if err != nil {
-		// zap.L().Fatal("Error setting up logger.", zap.Error(err))
 		log.Fatal("Error setting up logger.")
 	}
 	zap.ReplaceGlobals(zapLogger) // replace global logger with zap logger
 	defer zapLogger.Sync()
-	// zap.L().Debug("Zap logger created")
 
 	// log config settings
 	zap.L().Debug("Configuration values set.", zap.String("config", fmt.Sprintf("%+v", config)))
 
 	// create kafka client
-	// zap.L().Debug("InitKafkaClient before")
-	time.Sleep(10 * time.Second)
-	zap.L().Debug("sleeping 20 secs")
-
 	client := lib.InitKafkaClient(config)
 	defer client.Close()
-	// zap.L().Debug(fmt.Sprintf("client 3 - %v", client))
-	// zap.L().Debug(fmt.Sprintf("client 4 %+v", client))
-	// zap.L().Debug("InitKafkaClient after")
 
 	// if topic does not exist, create
-	var attemptLimit int8 = 4
+	var limit int8 = 4
+	var retryWait time.Duration = 10 * time.Second
 
-	for i := int8(0); i < attemptLimit; i++ {
+	for i := int8(0); i < limit; i++ {
 		exists := lib.CheckIfTopicExists(client, config.TopicName)
 		if !exists {
 			// topic does not exist, wait before checking again.
-			zap.L().Warn(fmt.Sprintf("Trying again in '%v' seconds. '%v' attempt(s) left.", WAIT_TIME.String(), attemptLimit-i))
+			zap.L().Warn(fmt.Sprintf("Trying again in '%v' seconds. '%v' attempt(s) left.", retryWait.String(), limit-i))
 			time.Sleep(WAIT_TIME)
+
 			continue
 
 		} else {

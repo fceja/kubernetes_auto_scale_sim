@@ -90,7 +90,7 @@ func pollForKafkaConnection(brokerAddresses []string, config *sarama.Config) sar
 		client, err = sarama.NewClient(brokerAddresses, config)
 		if err != nil {
 			zap.L().Error("Failed to connect to Kafka.", zap.Error(err))
-			time.Sleep(3 * time.Second)
+			time.Sleep(10 * time.Second)
 			continue
 		}
 		break

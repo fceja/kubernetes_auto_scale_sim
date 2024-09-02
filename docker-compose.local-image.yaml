@@ -4,9 +4,9 @@ services:
     deploy:
       replicas: 1
     image: docker.io/ciscoceja/zookeeper-3.9.2
-    restart: always
     ports:
       - "2181:2181"
+    restart: always
   kafka-server:
     depends_on:
       - zookeeper
@@ -27,22 +27,16 @@ services:
       - ./kafka_producer/.env
     image: docker.io/library/kafka-3.4.1-producer
     restart: always
-  # kafka-consumer:
-  #   depends_on:
-  #     - kafka-server
-  #   deploy:
-  #     replicas: 1
-  #   env_file:
-  #     - ./kafka_consumer/.env
-  #     # restart_policy:
-  #     #   condition: always
-  #   image: docker.io/library/kafka-3.4.1-consumer
-  #   # networks:
-  #   #   - kafka-net
-  #   restart: always
-  #   # secrets:
-  #   #   - kafka-consumer-secrets
-  kafdrop-server: # Optional
+  kafka-consumer:
+    depends_on:
+      - kafka-server
+    deploy:
+      replicas: 1
+    env_file:
+      - ./kafka_consumer/.env
+    image: docker.io/library/kafka-3.4.1-consumer
+    restart: always
+  kafdrop-server:
     depends_on:
       - kafka-server
     deploy:
