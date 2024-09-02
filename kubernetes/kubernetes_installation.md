@@ -137,20 +137,66 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
       - `http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/`
       - apply copied token
 
-- 6. (In not already installed) - Install run `kompose`
+- 7. A - Local. Create `deployment` and `service` files for Kubernetes
 
-  - run `kompose convert`
+  - Make sure local image is `tagged`
 
-- 7. Navigate to `/kompose`
+    - 1. Tag the local image with the Kind Cluster Name
+      - `kind get clusters`
+      - `docker tag zookeeper-3.9.2 kafka-cluster/zookeeper-3.9.2`
+    - 2. Load the Local Image into the Kind Cluster
+      - `kind load docker-image zookeeper-3.9.2 --name kafka-cluster`
 
+  - list all available images to the kind-cluster
+
+    - `docker exec -it kafka-cluster-control-plane crictl images`
+
+    - to remove
+
+      - docker `exec -it kafka-cluster-control-plane crictl rmi docker.io/ciscoceja/zookeeper-3.9.2`
+
+    - copy full image name and paste into `docker-compose.local.yaml`
+
+  - (In not already installed) - Install run `kompose`
+
+    - run `kompose convert`
+      - `kompose convert -f docker-compose.local.yaml`
+
+  - place generated file into `/kompose/local` and navigate to it
   - `kubectl apply -f .`
-    - or one by one
-      - `kubectl apply -f zookeeper-deployment.yaml -f zookeeper-service.yaml`
-      - standard to apply deployment first, however does not matter since handled by kubernetes
+  - OR
+  - `kubectl apply -f zookeeper-deployment.yaml -f zookeeper-service.yaml`
+    - standard to apply deployment first, however does not matter since handled by kubernetes
 
-- 7. Navigate to `/kompose`
+- 7. B - DockerHub - Create `deployment` and `service` files for Kubernetes
+
+  - (In not already installed) - Install run `kompose`
+
+    - run `kompose convert`
+      - `kompose convert -f docker-compose.dockerhub.yaml`
+
+  - place generated file into `/kompose/dockerhub` and navigate to it
+  - `kubectl apply -f .`
+  - OR
+  - `kubectl apply -f zookeeper-deployment.yaml -f zookeeper-service.yaml`
+    - standard to apply deployment first, however does not matter since handled by kubernetes
+
+- 8. Adding secrets
+
+  - `kubectl create secret generic my-secret --from-env-file=.env`
 
 - **DEBUG**
+
+- Note: In Kubernetes, when you delete a pod, if it is a part of a deployment, replica set, or stateful set, a new pod will automatically be created to maintain desired state
+
+  - To remove pod entirely and prevent from being recreated, you need to delete the higher-level resource that manages the pod.
+    - Delete Deployment, StatefulSet or ReplicaSet
+      - `kubectl delete deployment <deployment-name>`
+      - `kubectl delete statefulset <statefulset-name>`
+      - `kubectl delete replicaset <replicaset-name>`
+    - If Pod managed by Job or CronJob
+      - `kubectl delete job <job-name>`
+      - `kubectl delete cronjob <cronjob-name>`
 
 - `kind get clusters`
 - `kind create cluster --name CLUSTER_NAME`

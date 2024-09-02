@@ -20,69 +20,62 @@ type Config struct {
 	TopicName       string
 }
 
-// Helper
-// Converts string to a map
-func convertStrToMap(secretStr string) map[string]string {
-	lines := strings.Split(secretStr, "\n")
-	newMap := make(map[string]string)
-
-	// Parse each line and extract key-value pairs
-	for _, line := range lines {
-		// skip empty lines
-		if line == "" {
-			continue
+// Checks if reflect values are empty
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.String:
+		return v.String() == ""
+	case reflect.Slice, reflect.Map, reflect.Array:
+		// check if the slice length is 0
+		if v.Len() == 0 {
+			return true
 		}
 
-		// split line into key and value by '='
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) != 2 {
-			panic(fmt.Sprintln("Malformed line:", line))
+		// for elements in slice, check if contains zero values
+		for i := 0; i < v.Len(); i++ {
+			elem := v.Index(i)
+			if !elem.IsZero() {
+				return false
+			}
 		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-
-		newMap[key] = value
-	}
-
-	return newMap
-}
-
-// Load env vars via docker swarm - https://docs.docker.com/engine/swarm/
-func loadDockerEnvConfig(envConfigPath string) Config {
-	fmt.Print("Loading docker config via docker swarm.\n")
-
-	secretData, err := os.ReadFile(envConfigPath)
-	if err != nil {
-		panic(fmt.Sprintf("\nStack enabled? Error: %v", err))
-	}
-
-	// convert to map
-	mapSecrets := convertStrToMap(string(secretData))
-
-	return Config{
-		AppEnv:          mapSecrets["APP_ENV"],
-		BrokerAddresses: strings.Split(mapSecrets["DOCKER_BROKER_ADDRESSES"], ","),
-		LogLevel:        mapSecrets["LOG_LEVEL"],
-		LogFilePath:     mapSecrets["LOG_FILE_PATH"],
-		MessageLimit:    ConvertStrToInt(mapSecrets["MESSAGE_LIMIT"]),
-		SleepTimeout:    time.Duration(ConvertStrToInt(mapSecrets["SLEEP_TIMEOUT"])) * time.Millisecond,
-		TopicName:       mapSecrets["TOPIC_NAME"],
+		return true
+	case reflect.Ptr, reflect.Interface:
+		return v.IsNil()
+	default:
+		return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 	}
 }
 
-// Load env vars from local .env file
-func loadLocalEnvConfig() Config {
-	fmt.Print("Loading local .env file.\n")
+// Validates config values are not empty
+// Helps maintain consistency for local and docker config
+func validateConfig(config Config) {
+	configReflect := reflect.ValueOf(config)
+	configReflectTyp := reflect.TypeOf(config)
 
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
+	for i := 0; i < configReflect.NumField(); i++ {
+		nilConfigFieldType := configReflectTyp.Field(i).Name
+		configField := configReflect.Field(i)
+
+		// check if config fields are missing or empty
+		if isEmptyValue(configField) {
+			panic(fmt.Sprintf("\nMissing or empty config env var: '%v'", nilConfigFieldType))
+		}
+	}
+}
+
+// Section: Load env vars for Docker or Local
+func createConfig(isDocker bool) Config {
+	var brokerAddresses []string
+
+	if isDocker {
+		brokerAddresses = strings.Split(os.Getenv("DOCKER_BROKER_ADDRESSES"), ",")
+	} else {
+		brokerAddresses = strings.Split(os.Getenv("LOCAL_BROKER_ADDRESSES"), ",")
 	}
 
 	return Config{
 		AppEnv:          os.Getenv("APP_ENV"),
-		BrokerAddresses: strings.Split(os.Getenv("LOCAL_BROKER_ADDRESSES"), ","),
+		BrokerAddresses: brokerAddresses,
 		LogLevel:        os.Getenv("LOG_LEVEL"),
 		LogFilePath:     os.Getenv("LOG_FILE_PATH"),
 		MessageLimit:    ConvertStrToInt(os.Getenv("MESSAGE_LIMIT")),
@@ -91,33 +84,36 @@ func loadLocalEnvConfig() Config {
 	}
 }
 
-// Validates config values are not empty
-// Helps maintain consistency for local and docker config
-func validateConfig(config Config) {
-	value := reflect.ValueOf(config)
-	for i := 0; i < value.NumField(); i++ {
-		if value.Field(i).IsZero() {
-			typ := reflect.TypeOf(config)
-			panic(fmt.Sprintln("Invalid value:", typ.Field(i).Name))
-		}
+// Looks for docker specific file to determine
+// if running in a docker container
+func isRunningInDocker() bool {
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		fmt.Print("\nis running in docker.\n")
+		// exists, running in docker
+		return true
 	}
+	// does not exist, running locally
+	fmt.Print("\nis NOT running in docker.\n")
+	return false
 }
 
-// Allows program to determine whether it is being ran locally or within a docker container
-// It then loads environment variables
+// Section: Main
 func LoadConfig() Config {
-	var envConfig Config
+	var config Config
 
-	envConfigPath := ".env"
-	_, envFileErr := os.ReadFile(envConfigPath)
-	if envFileErr != nil {
-		const dockerSwarmSecretsPath = "/run/secrets/kafka-producer-secrets"
-		envConfig = loadDockerEnvConfig(dockerSwarmSecretsPath)
+	if !isRunningInDocker() {
+		// load .env file
+		err := godotenv.Load()
+		if err != nil {
+			panic(err)
+		}
+		config = createConfig(false)
 	} else {
-		envConfig = loadLocalEnvConfig()
+		config = createConfig(true)
 	}
 
-	validateConfig(envConfig)
+	// validate config
+	validateConfig(config)
 
-	return envConfig
+	return config
 }

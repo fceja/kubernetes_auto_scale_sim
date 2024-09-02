@@ -49,11 +49,18 @@
        && docker build -t kafdrop-4.0.3-snapshot ./kafdrop_server
       ```
 
-  - Deploy stack
+  - Deploy with docker-compose
 
     - ```bash
-       docker stack rm my_stack \
-       && docker stack deploy -c docker-compose.yml my_stack
+       docker-compose -f docker-compose.localImage.yaml up
+
+       docker-compose -f docker-compose.dockerHubImage.yaml up
+      ```
+
+    - view config
+
+    - ```bash
+      docker-compose -f docker-compose.localImage.yaml config
       ```
 
 ## Running Local Kafka Producer / Consumer
