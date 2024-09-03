@@ -141,32 +141,59 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
 
   - Make sure local image is `tagged`
 
-    - 1. Tag the local image with the Kind Cluster Name
+    - Build
+
       - `kind get clusters`
-      - `docker tag zookeeper-3.9.2 kafka-cluster/zookeeper-3.9.2`
-    - 2. Load the Local Image into the Kind Cluster
+      - `docker build -t zookeeper-3.9.2:latest .`
+
+      ```bash
+      docker build -t zookeeper-3.9.2:latest ./zookeeper \
+      && docker build -t kafka-3.4.1-server:latest ./kafka_server\
+      && docker build -t kafka-3.4.1-producer:latest ./kafka_producer \
+      && docker build -t kafka-3.4.1-consumer:latest ./kafka_consumer \
+      && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop_server
+      ```
+
+      - `kind load docker-image zookeeper-3.9.2:latest --name kafka-cluster`
+
+    - Load into kind
+
       - `kind load docker-image zookeeper-3.9.2 --name kafka-cluster`
 
-  - list all available images to the kind-cluster
+      ```bash
+        kind load docker-image zookeeper-3.9.2 --name kafka-cluster \
+        && kind load docker-image kafka-3.4.1-server --name kafka-cluster \
+        && kind load docker-image kafka-3.4.1-producer --name kafka-cluster \
+        && kind load docker-image kafka-3.4.1-consumer --name kafka-cluster \
+        && kind load docker-image kafdrop-4.0.3-snapshot --name kafka-cluster
+      ```
+
+  - Verify list all available images to the kind-cluster
 
     - `docker exec -it kafka-cluster-control-plane crictl images`
 
     - to remove
 
-      - docker `exec -it kafka-cluster-control-plane crictl rmi docker.io/ciscoceja/zookeeper-3.9.2`
+      - `docker exec -it kafka-cluster-control-plane crictl rmi docker.io/ciscoceja/zookeeper-3.9.2`
 
     - copy full image name and paste into `docker-compose.local.yaml`
 
   - (In not already installed) - Install run `kompose`
 
     - run `kompose convert`
-      - `kompose convert -f docker-compose.local.yaml`
+      - `kompose convert -f docker-compose.local-image.yaml`
 
-  - place generated file into `/kompose/local` and navigate to it
-  - `kubectl apply -f .`
-  - OR
-  - `kubectl apply -f zookeeper-deployment.yaml -f zookeeper-service.yaml`
-    - standard to apply deployment first, however does not matter since handled by kubernetes
+  - place generated file into `/kompose/local`
+
+  - manually add
+
+    - `imagePullPolicy: IfNotPresent`
+
+  - apply to kubernetes, navigate to`/kompose/local`
+    - `kubectl apply -f .`
+    - OR
+    - `kubectl apply -f zookeeper-deployment.yaml -f zookeeper-service.yaml`
+      - standard to apply deployment first, however does not matter since handled by kubernetes
 
 - 7. B - DockerHub - Create `deployment` and `service` files for Kubernetes
 
@@ -176,6 +203,11 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
       - `kompose convert -f docker-compose.dockerhub.yaml`
 
   - place generated file into `/kompose/dockerhub` and navigate to it
+
+  - manually add
+
+    - `imagePullPolicy: IfNotPresent`
+
   - `kubectl apply -f .`
   - OR
   - `kubectl apply -f zookeeper-deployment.yaml -f zookeeper-service.yaml`
@@ -192,14 +224,18 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
   - To remove pod entirely and prevent from being recreated, you need to delete the higher-level resource that manages the pod.
     - Delete Deployment, StatefulSet or ReplicaSet
       - `kubectl delete deployment <deployment-name>`
+        - `kubectl delete deployment --all`
       - `kubectl delete statefulset <statefulset-name>`
       - `kubectl delete replicaset <replicaset-name>`
     - If Pod managed by Job or CronJob
       - `kubectl delete job <job-name>`
       - `kubectl delete cronjob <cronjob-name>`
 
+- `docker exec -it kafka-cluster-control-plane crictl images`
+
 - `kind get clusters`
 - `kind create cluster --name CLUSTER_NAME`
+  - `kind create cluster --name kafka-cluster`
 - `kind delete cluster --name CLUSTER_NAME`
 
 - `kubectl get pods`

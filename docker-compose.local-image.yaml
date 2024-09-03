@@ -3,7 +3,7 @@ services:
   zookeeper:
     deploy:
       replicas: 1
-    image: docker.io/ciscoceja/zookeeper-3.9.2
+    image: zookeeper-3.9.2:latest
     ports:
       - "2181:2181"
     restart: always
@@ -14,7 +14,7 @@ services:
       replicas: 1
     env_file:
       - ./kafka_server/.env
-    image: docker.io/library/kafka-3.4.1-server
+    image: kafka-3.4.1-server:latest
     ports:
       - "9092:9092"
     restart: always
@@ -25,7 +25,7 @@ services:
       replicas: 1
     env_file:
       - ./kafka_producer/.env
-    image: docker.io/library/kafka-3.4.1-producer
+    image: kafka-3.4.1-producer:latest
     restart: always
   kafka-consumer:
     depends_on:
@@ -34,7 +34,7 @@ services:
       replicas: 1
     env_file:
       - ./kafka_consumer/.env
-    image: docker.io/library/kafka-3.4.1-consumer
+    image: kafka-3.4.1-consumer:latest
     restart: always
   kafdrop-server:
     depends_on:
@@ -43,7 +43,7 @@ services:
       replicas: 1
     env_file:
       - ./kafdrop_server/.env
-    image: docker.io/library/kafdrop-4.0.3-snapshot
+    image: kafdrop-4.0.3-snapshot:latest
     ports:
       - "9000:9000"
     restart: always
