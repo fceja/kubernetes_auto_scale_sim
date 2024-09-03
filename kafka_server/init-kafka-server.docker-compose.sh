@@ -10,7 +10,7 @@ attempt=0
 waitTime=2
 
 echo -e "$filePath Allow Zookeeper to load..."
-sleep 3
+sleep 7
 
 echo -e "$filePath Checking for Zookeeper availability at '${ZOOKEEPER_HOSTNAME}:${ZOOKEEPER_SERVER_PORT}'."
 while ! nc -zv "${ZOOKEEPER_HOSTNAME}" "${ZOOKEEPER_SERVER_PORT}" 2>/dev/null; do

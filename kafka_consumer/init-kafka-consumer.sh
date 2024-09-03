@@ -6,6 +6,8 @@ filePath="${GREEN}${INIT_FILE_PATH}${RESET} -"
 
 # Wait for Kafka server to be ready
 echo -e "$filePath Waiting for Kafka server availability at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'."
+sleep 30
+
 maxAttempts=10
 attempt=0
 waitTime=2
