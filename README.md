@@ -9,6 +9,12 @@
 
 - Note: following images must first be built before deploying stack
 
+  - Grafana
+
+    - ```bash
+       docker build -t grafana-11.2.0 ./grafana
+      ```
+
   - Kafdrop Server
 
     - ```bash
@@ -48,6 +54,7 @@
   - All
 
     - ```bash
+       && docker build -t grafana-11.2.0 ./grafana \
        && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop_server \
        && docker build -t kafka-3.4.1-producer:latest ./kafka_producer \
        && docker build -t kafka-3.4.1-consumer:latest ./kafka_consumer \
