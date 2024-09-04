@@ -4,24 +4,29 @@ GREEN='\033[32m'
 RESET='\033[0m'
 filePath="${GREEN}${INIT_FILE_PATH}${RESET} -"
 
+# Kubernetes automatically appends to 'KAFKA_SERVER_PORT'
+# we only care about actual port number, parse only what we need
+# e.g., "tcp://10.96.17.57:9092" -> "9092"
+PORT=$(echo "${KAFKA_SERVER_PORT}" | sed 's|.*:||')
+
 # Wait for Kafka server to be ready
-echo -e "$filePath Waiting for Kafka server availability at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'."
-sleep 20
+echo -e "$filePath Waiting for Kafka server availability at '$KAFKA_HOSTNAME:$PORT'. Sleep 5 secs."
+sleep 5
 
 maxAttempts=10
 attempt=0
 waitTime=2
 
-while ! nc -zv "${KAFKA_HOSTNAME}" "${KAFKA_SERVER_PORT}" 2>/dev/null; do
+while ! nc -zv $KAFKA_HOSTNAME $PORT 2>/dev/null; do
     attempt=$((attempt + 1))
     if [ "$attempt" -gt "$maxAttempts" ]; then
-        echo -e "Failed to connect to Kafka server at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'. Exiting."
+        echo -e "Failed to connect to Kafka server at '$KAFKA_HOSTNAME:$PORT'. Exiting."
         exit 1
     fi
     echo -e "$filePath Attempting to connect..."
     sleep $waitTime
 done
-echo -e "$filePath Kafka connection successful at '${KAFKA_HOSTNAME}:${KAFKA_SERVER_PORT}'."
+echo -e "$filePath Kafka connection successful at '$KAFKA_HOSTNAME:$PORT'."
 
 # Remove netcat-openbsd since no longer needed
 echo -e "$filePath Cleaning up."
