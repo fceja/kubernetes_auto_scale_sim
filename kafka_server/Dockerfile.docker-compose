@@ -47,14 +47,22 @@ WORKDIR ${KAFKA_HOME}
 # Create directories for Kafka data and logs
 RUN mkdir -p ${KAFKA_DATA_DIR} ${KAFKA_LOG_DIR}
 
-# Expose Kafka port
+# Expose Kafka and JMX Exporter port
 EXPOSE 9092
+EXPOSE 9080
 
 # Copy Go binary from builder stage
 COPY --from=builder /app .
 
 # Copy Kafka server config file
 COPY /server.properties.docker-compose ${KAFKA_HOME}/config/server.properties.docker-compose
+
+# Copy JMX Exporter jar and config
+COPY jmx_prometheus_javaagent-1.0.1.jar /opt/jmx_exporter/
+COPY kafka-jmx-config.yaml /opt/jmx_exporter/
+
+# Add JMX Exporter agent to startup options
+ENV KAFKA_OPTS="-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent-1.0.1.jar=8080:/opt/jmx_exporter/kafka-jmx-config.yaml"
 
 # Copy init script and make executable
 COPY init-kafka-server.docker-compose.sh .

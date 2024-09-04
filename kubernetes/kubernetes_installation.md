@@ -46,7 +46,7 @@ Kind does not come with dashboard. To view dashboard, must follow steps below.
 
 ## Creating Pods
 
-`docker-compose.yml` file isn't directly compatible with Kubernetes, but it can be converted.
+`docker-compose.yaml` file isn't directly compatible with Kubernetes, but it can be converted.
 Kubernetes uses its own format, Kubernetes manifest.
 
 - Convert by using `kompose` tool

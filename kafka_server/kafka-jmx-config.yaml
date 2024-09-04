@@ -1,0 +1,51 @@
+---
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+rules:
+  - pattern: "kafka.server:type=BrokerTopicMetrics,name=MessagesInPerSec"
+    name: kafka_server_broker_topic_metrics_messages_in_total
+    type: GAUGE
+    help: "Total number of messages received per second"
+
+  # Export Kafka server metrics
+  - pattern: kafka.server<type=(BrokerTopicMetrics), name=(.+)><>(Count)
+    name: kafka_server_$1_$2
+    type: GAUGE
+    help: "Kafka server broker topic metrics"
+
+  # Export Kafka consumer metrics
+  - pattern: kafka.consumer<type=(.+), client-id=(.+), topic=(.+)><>([A-Za-z]+)
+    name: kafka_consumer_$1_$3_$4
+    labels:
+      client_id: "$2"
+      topic: "$3"
+    type: GAUGE
+    help: "Kafka consumer metrics"
+
+  # Export Kafka producer metrics
+  - pattern: kafka.producer<type=(.+), client-id=(.+)><>([A-Za-z]+)
+    name: kafka_producer_$1_$3
+    labels:
+      client_id: "$2"
+    type: GAUGE
+    help: "Kafka producer metrics"
+
+  # Export Kafka controller metrics
+  - pattern: kafka.controller<type=(.+)><>([A-Za-z]+)
+    name: kafka_controller_$1_$2
+    type: GAUGE
+    help: "Kafka controller metrics"
+
+  # Export JVM memory metrics
+  - pattern: java.lang<type=Memory><>([A-Za-z]+)
+    name: jvm_memory_$1
+    type: GAUGE
+    help: "JVM memory metrics"
+
+  # Export JVM garbage collection metrics
+  - pattern: java.lang<type=GarbageCollector, name=(.+)><>(CollectionCount|CollectionTime)
+    name: jvm_gc_$2
+    labels:
+      gc: "$1"
+    type: COUNTER
+    help: "JVM garbage collection metrics"

@@ -18,32 +18,10 @@ services:
     ports:
       - "9092:9092"
     restart: always
-  kafka-producer:
+  prometheus:
     depends_on:
       - kafka-server
-    deploy:
-      replicas: 1
-    env_file:
-      - ./kafka_producer/.env
-    image: kafka-3.4.1-producer:latest
-    restart: always
-  kafka-consumer:
-    depends_on:
-      - kafka-server
-    deploy:
-      replicas: 1
-    env_file:
-      - ./kafka_consumer/.env
-    image: kafka-3.4.1-consumer:latest
-    restart: always
-  kafdrop-server:
-    depends_on:
-      - kafka-server
-    deploy:
-      replicas: 1
-    env_file:
-      - ./kafdrop_server/.env
-    image: kafdrop-4.0.3-snapshot:latest
+    image: prometheus-2.54.1:latest
     ports:
       - "9000:9000"
     restart: always

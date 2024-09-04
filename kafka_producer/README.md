@@ -16,9 +16,9 @@
 
 \*\* Note - Need to build image before deploying to stack.
 
-`docker stack deploy -c docker-compose.yml my_stack`
+`docker stack deploy -c docker-compose.yaml my_stack`
 
 ## All-in-one
 
 Delete previous stack, build docker image, deploy stack from rebuilt image
-`docker stack rm my_stack && docker build -t kafka_producer . && docker stack deploy -c docker-compose.yml my_stack`
+`docker stack rm my_stack && docker build -t kafka_producer . && docker stack deploy -c docker-compose.yaml my_stack`

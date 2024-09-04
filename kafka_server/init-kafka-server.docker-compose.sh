@@ -26,8 +26,6 @@ echo -e "$filePath Connected to Zookeeper."
 
 # Start Kafka server
 echo -e "$filePath Starting Kafka server."
-
-# Display the contents of the server.properties file
 ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server.properties.docker-compose &
 KAFKA_PID=$!
 

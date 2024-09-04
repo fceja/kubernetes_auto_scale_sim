@@ -9,22 +9,10 @@
 
 - Note: following images must first be built before deploying stack
 
-  - Zookeeper
+  - Kafdrop Server
 
     - ```bash
-       docker build -t zookeeper-3.9.2 ./zookeeper
-      ```
-
-  - Kafka Server
-
-    - ```bash
-       docker build -t kafka-3.4.1-server ./kafka_server
-      ```
-
-  - Kafka Producer
-
-    - ```bash
-       docker build -t kafka-3.4.1-producer ./kafka_producer
+       docker build -t kafdrop-4.0.3-snapshot ./kafdrop_server
       ```
 
   - Kafka Consumer
@@ -33,47 +21,56 @@
        docker build -t kafka-3.4.1-consumer ./kafka_consumer
       ```
 
-  - Kafdrop Server
+  - Kafka Producer
 
     - ```bash
-       docker build -t kafdrop-4.0.3-snapshot ./kafdrop_server
+       docker build -t kafka-3.4.1-producer ./kafka_producer
       ```
 
-  - Kafka - All
+  - Kafka Server
 
     - ```bash
-       docker build -t zookeeper-3.9.2 ./zookeeper \
-       && docker build -t kafka-3.4.1-server ./kafka_server \
-       && docker build -t kafka-3.4.1-producer ./kafka_producer \
-       && docker build -t kafka-3.4.1-consumer ./kafka_consumer \
-       && docker build -t kafdrop-4.0.3-snapshot ./kafdrop_server
+       docker build -t kafka-3.4.1-server ./kafka_server
       ```
 
+  - Prometheus
+
     - ```bash
-       docker build -t zookeeper-3.9.2:latest ./zookeeper \
-       && docker build -t kafka-3.4.1-server.docker-compose:latest -f ./kafka_server/Dockerfile.docker-compose ./kafka_server \
+       docker build -t prometheus-2.54.1 ./prometheus
+      ```
+
+  - Zookeeper
+
+    - ```bash
+       docker build -t zookeeper-3.9.2 ./zookeeper
+      ```
+
+  - All
+
+    - ```bash
+       && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop_server \
        && docker build -t kafka-3.4.1-producer:latest ./kafka_producer \
        && docker build -t kafka-3.4.1-consumer:latest ./kafka_consumer \
-       && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop_server
+       && docker build -t kafka-3.4.1-server.docker-compose:latest -f ./kafka_server/Dockerfile.docker-compose ./kafka_server \
+       && docker build -t prometheus-2.54.1 ./prometheus \
+       && docker build -t zookeeper-3.9.2:latest ./zookeeper \
       ```
 
   - Deploy with docker-compose
 
     - ```bash
-       docker-compose -f docker-compose.local-image.yaml up
-
-       docker-compose -f docker-compose.dockerHubImage.yaml up
+      docker-compose -f docker-compose.yaml up
       ```
 
     - view config
 
     - ```bash
-      docker-compose -f docker-compose.localImage.yaml config
+      docker-compose -f docker-compose.yaml config
       ```
 
 ## Running Local Kafka Producer / Consumer
 
-Since Zookeepr and Kafka server are always ran in a docker container, they are are created via compose-docker stack and connect to the swarm managed network.
+Since Zookeeper and Kafka server are always ran in a docker container, they are are created via compose-docker stack and connect to the swarm managed network.
 
 We need to add terminal ran `kafka-producer` and `kafka-consumer` to the network
 
