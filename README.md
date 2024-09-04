@@ -49,10 +49,18 @@
        && docker build -t kafdrop-4.0.3-snapshot ./kafdrop_server
       ```
 
+    - ```bash
+       docker build -t zookeeper-3.9.2:latest ./zookeeper \
+       && docker build -t kafka-3.4.1-server.docker-compose:latest -f ./kafka_server/Dockerfile.docker-compose ./kafka_server \
+       && docker build -t kafka-3.4.1-producer:latest ./kafka_producer \
+       && docker build -t kafka-3.4.1-consumer:latest ./kafka_consumer \
+       && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop_server
+      ```
+
   - Deploy with docker-compose
 
     - ```bash
-       docker-compose -f docker-compose.localImage.yaml up
+       docker-compose -f docker-compose.local-image.yaml up
 
        docker-compose -f docker-compose.dockerHubImage.yaml up
       ```

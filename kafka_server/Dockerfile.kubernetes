@@ -29,7 +29,7 @@ ENV KAFKA_VERSION=3.4.1 \
     INIT_FILE_PATH=init-kafka-server.kubernetes.sh
 
 # Install required packages and clean up
-RUN apt-get update && apt-get install -y wget curl gnupg netcat-openbsd iputils-ping \
+RUN apt-get update && apt-get install -y wget curl gnupg netcat-openbsd \
     && wget https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz \
     && tar -xzf kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz -C /opt \
     && mv /opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION} ${KAFKA_HOME} \

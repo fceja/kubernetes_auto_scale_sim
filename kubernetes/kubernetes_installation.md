@@ -46,7 +46,7 @@ Kind does not come with dashboard. To view dashboard, must follow steps below.
 
 ## Creating Pods
 
-`docker-compose.yml` file isn't directly compatabile with Kubernetes, but it can be converted.
+`docker-compose.yml` file isn't directly compatible with Kubernetes, but it can be converted.
 Kubernetes uses its own format, Kubernetes manifest.
 
 - Convert by using `kompose` tool
@@ -148,7 +148,7 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
 
       ```bash
       docker build -t zookeeper-3.9.2:latest ./zookeeper \
-      && docker build -t kafka-3.4.1-server:latest ./kafka_server\
+      && docker build -t kafka-3.4.1-server:latest ./kafka_server \
       && docker build -t kafka-3.4.1-producer:latest ./kafka_producer \
       && docker build -t kafka-3.4.1-consumer:latest ./kafka_consumer \
       && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop_server
@@ -163,6 +163,14 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
       ```bash
         kind load docker-image zookeeper-3.9.2 --name kafka-cluster \
         && kind load docker-image kafka-3.4.1-server --name kafka-cluster \
+        && kind load docker-image kafka-3.4.1-producer --name kafka-cluster \
+        && kind load docker-image kafka-3.4.1-consumer --name kafka-cluster \
+        && kind load docker-image kafdrop-4.0.3-snapshot --name kafka-cluster
+      ```
+
+      ```bash
+        kind load docker-image zookeeper-3.9.2 --name kafka-cluster \
+        && kind load docker-image kafka-3.4.1-server.kubernetes --name kafka-cluster \
         && kind load docker-image kafka-3.4.1-producer --name kafka-cluster \
         && kind load docker-image kafka-3.4.1-consumer --name kafka-cluster \
         && kind load docker-image kafdrop-4.0.3-snapshot --name kafka-cluster
@@ -200,7 +208,8 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
   - (In not already installed) - Install run `kompose`
 
     - run `kompose convert`
-      - `kompose convert -f docker-compose.dockerhub.yaml`
+      - `kompose convert -f docker-compose.yaml`
+      - `kompose convert -f docker-compose.kubernetes.yaml`
 
   - place generated file into `/kompose/dockerhub` and navigate to it
 
@@ -216,6 +225,18 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
 - 8. Adding secrets
 
   - `kubectl create secret generic my-secret --from-env-file=.env`
+
+  ```bash
+    kubectl create secret generic kafka-server-env --from-env-file=./kafka_server/.env \
+    && kubectl create secret generic kafka-producer-env --from-env-file=./kafka_producer/.env \
+    && kubectl create secret generic kafka-consumer-env --from-env-file=./kafka_consumer/.env \
+    && kubectl create secret generic kafdrop-server-env --from-env-file=./kafdrop_server/.env
+  ```
+
+  - `kubectl delete secret my-secret`
+  - `kubectl get secrets`
+  - `kubectl get secrets --namespace=my-namespace`
+  - `kubectl describe secret my-secret`
 
 - **DEBUG**
 
