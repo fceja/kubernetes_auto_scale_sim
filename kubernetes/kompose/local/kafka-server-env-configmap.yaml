@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  APP_ENV: development
+  BROKER_ADDRESSES: kafka-server:9092
+  LOG_FILE_PATH: logs/development.log
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: kafka-server-kafka-server-env
+  name: kafka-server-env

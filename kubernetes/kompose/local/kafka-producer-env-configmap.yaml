@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  APP_ENV: development
+  DOCKER_BROKER_ADDRESSES: kafka-server:9093
+  LOCAL_BROKER_ADDRESSES: kafka-server:9092
+  LOG_FILE_PATH: logs/development.log
+  LOG_LEVEL: development
+  MESSAGE_LIMIT: "100"
+  SLEEP_TIMEOUT: "1000"
+  TOPIC_NAME: example-topic-1
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: kafka-producer-kafka-producer-env
+  name: kafka-producer-env
