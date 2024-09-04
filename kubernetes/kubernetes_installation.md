@@ -238,6 +238,13 @@ Images are pulled in variety of ways, docker hub, kind, docker daemon, etc.
   - `kubectl get secrets --namespace=my-namespace`
   - `kubectl describe secret my-secret`
 
+- 9. View Kafdrop UI
+
+  - kubectl get svc
+    - get name of kafdrop service , `kafdrop-server`
+  - forward port
+    - `kubectl port-forward svc/kafdrop-server 9000:9000`
+
 - **DEBUG**
 
 - Note: In Kubernetes, when you delete a pod, if it is a part of a deployment, replica set, or stateful set, a new pod will automatically be created to maintain desired state

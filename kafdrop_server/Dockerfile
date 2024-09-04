@@ -2,7 +2,7 @@ FROM eclipse-temurin:17.0.12_7-jdk
 
 # Set environment variables
 ENV KAFKA_HOSTNAME=kafka-server \
-    KAFKA_SERVER_PORT=9093 \
+    KAFKA_SERVER_PORT=9092 \
     INIT_FILE_PATH=init-kafdrop-server.sh
 
 # Set working dir in container

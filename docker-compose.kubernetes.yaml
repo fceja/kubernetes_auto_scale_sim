@@ -47,3 +47,5 @@ services:
     ports:
       - "9000:9000"
     restart: always
+    labels:
+      - kompose.service.type=nodeport # Add this line
