@@ -10,8 +10,8 @@ filePath="${GREEN}${INIT_FILE_PATH}${RESET} -"
 PORT=$(echo "${KAFKA_SERVER_PORT}" | sed 's|.*:||')
 
 # Wait for Kafka server to be ready
-echo -e "$filePath Waiting for Kafka server availability at '$KAFKA_HOSTNAME:$PORT'. Sleep 5 secs."
-sleep 5
+echo -e "$filePath Waiting for Kafka server availability at '$KAFKA_HOSTNAME:$PORT'. Sleep 10 secs."
+sleep 10
 
 maxAttempts=10
 attempt=0

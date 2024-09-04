@@ -114,7 +114,7 @@ func LoadConfig() Config {
 		}
 		config = createConfig(false)
 
-		} else if isRunningInKubernetes {
+	} else if isRunningInKubernetes {
 		fmt.Print("Is running in Kubernetes cluster.\n")
 		config = createConfig(false)
 

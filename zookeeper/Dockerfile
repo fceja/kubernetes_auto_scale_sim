@@ -8,7 +8,7 @@ ENV ZOOKEEPER_VERSION=3.9.2 \
     ZOOKEEPER_DATA_LOG_DIR=/var/lib/zookeeper/log \
     ZOOKEEPER_PORT=2181 \
     ZOOKEEPER_TICK_TIME=2000 \
-    ZOOKEEPER_HOSTNAME=localhost \
+    ZOOKEEPER_HOSTNAME=zookeeper \
     ZOOKEEPER_SERVER_PORT=2181 \
     INIT_FILE_PATH=init-zookeeper.sh
 

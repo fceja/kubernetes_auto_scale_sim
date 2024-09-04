@@ -71,12 +71,23 @@ func validateConfig(config Config) {
 // if running in a docker container
 func isRunningInDocker() bool {
 	if _, err := os.Stat("/.dockerenv"); err == nil {
-		fmt.Print("\nis running in docker.\n")
-		// exists, running in docker
+		fmt.Print("Is running in Docker container.\n")
+
 		return true
 	}
-	// does not exist, running locally
-	fmt.Print("\nis NOT running in docker.\n")
+
+	return false
+}
+
+// Looks for specific environment variable assigned by kubernetes
+// to determine if running in a kubernetes cluster.
+func isRunningInKubernetes() bool {
+	if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
+		fmt.Print("Is running in Kubernetes cluster.\n")
+
+		return true
+	}
+
 	return false
 }
 
@@ -84,7 +95,7 @@ func isRunningInDocker() bool {
 func LoadConfig() Config {
 	var config Config
 
-	if !isRunningInDocker() {
+	if !isRunningInDocker() && !isRunningInKubernetes() {
 		// load .env file
 		err := godotenv.Load()
 		if err != nil {

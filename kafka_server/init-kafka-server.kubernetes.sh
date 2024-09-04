@@ -38,9 +38,9 @@ attempt=0
 echo -e "$filePath Allowing for Kafka server to load. Sleep 3 secs."
 sleep 3
 
-# kubernetes autumatically appends to port env var
+# Kubernetes automatically appends to 'KAFKA_SERVER_PORT'
 # we only care about actual port number, parse only what we need
-# "tcp://10.96.17.57:9092" -> "9092"
+# e.g., "tcp://10.96.17.57:9092" -> "9092"
 PORT=$(echo "${KAFKA_SERVER_PORT}" | sed 's|.*:||')
 
 # Check if Kafka port ready
