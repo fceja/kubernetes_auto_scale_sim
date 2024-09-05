@@ -60,10 +60,12 @@ For remaining installation/deployment steps:
 - For Option 1, view `~/project_root/README-Docker-Compose-Installation.md`.
 - For Option 2, view `~/project_root/README-Kubernetes-Installation.md`.
 
-## Screenshot - Docker Compose
+## Screenshots 
+
+### Docker Compose
 
 <img src="/screenshots/docker-compose.png" alt="project screenshot for docker-compose" />
 
-### Screenshot - Kubernetes Cluster
+### Kubernetes Cluster
 
 <img src="/screenshots/kubernetes-cluster.png" alt="project screenshot for kubernetes cluster" />
