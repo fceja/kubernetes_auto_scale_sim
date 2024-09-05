@@ -16,8 +16,8 @@ Option 2: using `kind` to run local Kubernetes clusters using Docker containers.
 
 Some services require additional steps for installation.
 
-- To skip running `Kafdrop`, you can simply comment out the `kafdrop-server` section from services in `docker-compose.yaml`
-- To skip running `Prometheus`, you can simply comment out the `prometheus` and `grafana` sections from services in `docker-compose.yaml`
+- To skip additional installation for `Kafdrop`, you can simply comment out the `kafdrop-server` section from services in `docker-compose.yaml`
+- To skip additional installation for `Prometheus`, you can simply comment out the `prometheus` and `grafana` sections from services in `docker-compose.yaml`
 
 - Kafdrop setup
 
@@ -60,3 +60,6 @@ Some services require additional steps for installation.
     - ```bash
       docker-compose -f docker-compose.yaml config
       ```
+
+### Screenshot
+<img src="/screenshots/docker-compose.png" alt="project screenshot for docker-compose" />
