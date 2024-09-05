@@ -54,13 +54,13 @@ This page contains common installation steps for both options. For remaining ins
      && docker build -t zookeeper-3.9.2:latest ./zookeeper
     ```
 
-### Remaining Installation / Deployment
+## Remaining Installation / Deployment
 
 For remaining installation/deployment steps:
 
 - For Option 1, view `~/project_root/README-Docker-Compose-Installation.md`.
 - For Option 2, view `~/project_root/README-Kubernetes-Installation.md`.
 
-### Screenshot - Docker Compose
+## Screenshot - Docker Compose
 
 <img src="/screenshots/docker-compose.png" alt="project screenshot for docker-compose" />
