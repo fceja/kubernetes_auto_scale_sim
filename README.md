@@ -1,7 +1,8 @@
 # Description
 
-A `Kubernetes cluster` project that simulates `Pod` auto-scaling.
+A `Kubernetes cluster` project that simulates `Pod` auto-scaling. Written in Go and a couple of bash scripts.
 
+## Additional Info
 \*\*NOTE - There are two ways to run:
 
 Option 1: using `docker-compose` to run as standalone Docker containers.
