@@ -1,99 +1,62 @@
-# Init Container Stack
+# Description
 
-## Build Image - Kafka Producer
+A `Kubernetes cluster` project that simulates `Pod` auto-scaling.
 
-- Navigate to ~/project_root/kafka_producer
-  - `docker build -t kafka_producer .`
+There are two ways to run:
 
-## Deploy Stack
+Option 1: using `docker-compose` to run as standalone Docker containers.
 
-- Note: following images must first be built before deploying stack
+Option 2: using `kind` to run local Kubernetes clusters using Docker containers.
 
-  - Grafana
+## Install Docker Desktop
 
-    - ```bash
-       docker build -t grafana-11.2.0 ./grafana
-      ```
+- https://www.docker.com/products/docker-desktop/
 
-  - Kafdrop Server
+### Optional
 
-    - ```bash
-       docker build -t kafdrop-4.0.3-snapshot ./kafdrop_server
-      ```
+Some services require additional steps for installation.
 
-  - Kafka Consumer
+- To skip running `Kafdrop`, you can simply comment out the `kafdrop-server` section from services in `docker-compose.yaml`
+- To skip running `Prometheus`, you can simply comment out the `prometheus` and `grafana` sections from services in `docker-compose.yaml`
 
-    - ```bash
-       docker build -t kafka-3.4.1-consumer ./kafka_consumer
-      ```
+- Kafdrop setup
 
-  - Kafka Producer
+  - To run Kafdrop, you will need to prepare a `kafdrop .bin.tar.gz` file.
 
-    - ```bash
-       docker build -t kafka-3.4.1-producer ./kafka_producer
-      ```
+    - Follow the `Building` instructions at [GitHub-obsidiandynamics](https://github.com/obsidiandynamics/kafdrop).
+    - The output will produce a `/target` directory.
+      - Copy and paste `kafdrop-4.0.3-SNAPSHOT-bin.tar.gz` into `~/project_root/kafdrop`
 
-  - Kafka Server
+- Prometheus setup
 
-    - ```bash
-       docker build -t kafka-3.4.1-server ./kafka_server
-      ```
+  - To run Prometheus, download `jmx_prometheus_javaagent-1.0.1.jar` from [Github-prometheus](https://github.com/prometheus/jmx_exporter/releases) and place into `~/project_root/kafka/server`.
 
-  - Prometheus
+## Build Docker Images
 
-    - ```bash
-       docker build -t prometheus-2.54.1 ./prometheus
-      ```
+- Navigate to project Root and run:
 
-  - Zookeeper
+  - Note - if you skipped the `kafdrop` or `prometheus` or `grafana` optional setups, you can also skip their build steps below.
 
-    - ```bash
-       docker build -t zookeeper-3.9.2 ./zookeeper
-      ```
+  - ```bash
+     docker build -t grafana-11.2.0 ./grafana \
+     && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop \
+     && docker build -t kafka-3.4.1-producer:latest ./kafka/producer \
+     && docker build -t kafka-3.4.1-consumer:latest ./kafka/consumer \
+     && docker build -t kafka-3.4.1-server.docker-compose:latest -f ./kafka/server/Dockerfile.docker-compose ./kafka/server \
+     && docker build -t prometheus-2.54.1 ./prometheus \
+     && docker build -t zookeeper-3.9.2:latest ./zookeeper
+    ```
 
-  - All
+## Deploy with Docker Compose
 
-    - ```bash
-       && docker build -t grafana-11.2.0 ./grafana \
-       && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop \
-       && docker build -t kafka-3.4.1-producer:latest ./kafka/producer \
-       && docker build -t kafka-3.4.1-consumer:latest ./kafka/consumer \
-       && docker build -t kafka-3.4.1-server.docker-compose:latest -f ./kafka/server/Dockerfile.docker-compose ./kafka/server \
-       && docker build -t prometheus-2.54.1 ./prometheus \
-       && docker build -t zookeeper-3.9.2:latest ./zookeeper \
-      ```
+- Deploy with docker-compose
 
-  - Deploy with docker-compose
+  - ```bash
+    docker-compose -f docker-compose.yaml up
+    ```
 
-    - ```bash
-      docker-compose -f docker-compose.yaml up
-      ```
-
-    - view config
+  - Debugging: view config
 
     - ```bash
       docker-compose -f docker-compose.yaml config
       ```
-
-## Running Local Kafka Producer / Consumer
-
-Since Zookeeper and Kafka server are always ran in a docker container, they are are created via compose-docker stack and connect to the swarm managed network.
-
-We need to add terminal ran `kafka-producer` and `kafka-consumer` to the network
-
-\*\* Note - localhost:9092 worked.
-
-- Identify Swarm Network
-  - Look for network associated with your stack (e.g. `stackname_default`)
-  - `docker network ls`
-- Find IP Address of the Containers
-  - Get IP address of the `kafka-server` container by inspecting
-    - `docker ps`
-    - `docker inspect <container_name_or_id>`
-    - NetworkSettings > Networks > <my_stack_default> > IPAddress
-- Optional - Allow External Access to Containers
-- hat the container service that ports exposed, e.g., `"9092:9092"` for Kafka.
-- Update Go application:
-  - In you Go code, set the Kafka Broker address using the container's IP address and port
-    - e.g. `192.168.x.x:9092`
-  - Alternatively, if ports are exposed on the host, you can connect using `localhost:9092`

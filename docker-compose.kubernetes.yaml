@@ -13,7 +13,7 @@ services:
     deploy:
       replicas: 1
     env_file:
-      - ./kafka_server/.env
+      - ./kafka/server/.env
     image: kafka-3.4.1-server.kubernetes:latest
     ports:
       - "9092:9092"
@@ -24,7 +24,7 @@ services:
     deploy:
       replicas: 1
     env_file:
-      - ./kafka_producer/.env
+      - ./kafka/producer/.env
     image: kafka-3.4.1-producer:latest
     restart: always
   kafka-consumer:
@@ -33,7 +33,7 @@ services:
     deploy:
       replicas: 1
     env_file:
-      - ./kafka_consumer/.env
+      - ./kafka/consumer/.env
     image: kafka-3.4.1-consumer:latest
     restart: always
   kafdrop-server:
@@ -42,10 +42,10 @@ services:
     deploy:
       replicas: 1
     env_file:
-      - ./kafdrop_server/.env
+      - ./kafdrop/.env
     image: kafdrop-4.0.3-snapshot:latest
     ports:
       - "9000:9000"
     restart: always
     labels:
-      - kompose.service.type=nodeport # Add this line
+      - kompose.service.type=nodeport
