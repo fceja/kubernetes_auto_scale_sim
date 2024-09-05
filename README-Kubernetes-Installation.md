@@ -1,6 +1,14 @@
-# Kubernetes Installation
+# Finish Kubernetes Cluster Setup
 
-## Installation
+## Build Remaining Docker Image
+
+- Navigate to project Root and run:
+
+  - ```bash
+     docker build -t kafka-3.4.1-server.kubernetes:latest -f ./kafka/server/Dockerfile.kubernetes ./kafka/server
+    ```
+
+## Install Dependencies
 
 To simplify installation, homebrew package manager is used. You can install dependencies separately or with your preferred package manager.
 
@@ -43,13 +51,13 @@ To simplify installation, homebrew package manager is used. You can install depe
   - Note - you can skip loading image there were docker image was not built.
 
   - ```bash
-      kind load docker-image zookeeper-3.9.2 --name kafka-cluster \
-      && kind load docker-image kafka-3.4.1-server.kubernetes:latest --name kafka-cluster \
+      kind load docker-image kafka-3.4.1-server.kubernetes:latest --name kafka-cluster \
       && kind load docker-image kafka-3.4.1-producer:latest --name kafka-cluster \
       && kind load docker-image kafka-3.4.1-consumer:latest --name kafka-cluster \
       && kind load docker-image kafdrop-4.0.3-snapshot:latest --name kafka-cluster \
       && kind load docker-image prometheus-2.54.1:latest --name kafka-cluster \
       && kind load docker-image grafana-11.2.0:latest --name kafka-cluster
+      && kind load docker-image zookeeper-3.9.2 --name kafka-cluster
     ```
 
 ### Kompose setup

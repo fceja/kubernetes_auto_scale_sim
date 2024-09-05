@@ -48,7 +48,6 @@ This page contains common installation steps for both options. For remaining ins
      && docker build -t kafdrop-4.0.3-snapshot:latest ./kafdrop \
      && docker build -t kafka-3.4.1-producer:latest ./kafka/producer \
      && docker build -t kafka-3.4.1-consumer:latest ./kafka/consumer \
-     && docker build -t kafka-3.4.1-server.docker-compose:latest -f ./kafka/server/Dockerfile.docker-compose ./kafka/server \
      && docker build -t prometheus-2.54.1 ./prometheus \
      && docker build -t zookeeper-3.9.2:latest ./zookeeper
     ```
@@ -63,3 +62,7 @@ For remaining installation/deployment steps:
 ### Screenshot - Docker Compose
 
 <img src="/screenshots/docker-compose.png" alt="project screenshot for docker-compose" />
+
+### Screenshot - Kubernetes Cluster
+
+<img src="/screenshots/kubernetes-cluster.png" alt="project screenshot for kubernetes cluster" />

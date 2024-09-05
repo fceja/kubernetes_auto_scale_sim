@@ -49,3 +49,15 @@ services:
     restart: always
     labels:
       - kompose.service.type=nodeport
+  prometheus:
+    depends_on:
+      - kafka-server
+    image: prometheus-2.54.1:latest
+    ports:
+      - "9090:9090"
+  grafana:
+    depends_on:
+      - prometheus
+    image: grafana-11.2.0:latest
+    ports:
+      - "3000:3000"
