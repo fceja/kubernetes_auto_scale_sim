@@ -1,7 +1,8 @@
 # Description
 
-A `Kubernetes cluster` project that simulates `Pod` auto-scaling.
+A `Kubernetes cluster` project that simulates `Pod` auto-scaling. Written in Go and a couple of bash scripts.
 
+## Additional Info
 \*\*NOTE - There are two ways to run:
 
 Option 1: using `docker-compose` to run as standalone Docker containers.
@@ -52,14 +53,14 @@ This page contains common installation steps for both options. For remaining ins
      && docker build -t zookeeper-3.9.2:latest ./zookeeper
     ```
 
-### Remaining Installation / Deployment
+## Remaining Installation / Deployment
 
 For remaining installation/deployment steps:
 
 - For Option 1, view `~/project_root/README-Docker-Compose-Installation.md`.
 - For Option 2, view `~/project_root/README-Kubernetes-Installation.md`.
 
-### Screenshot - Docker Compose
+## Screenshot - Docker Compose
 
 <img src="/screenshots/docker-compose.png" alt="project screenshot for docker-compose" />
 
