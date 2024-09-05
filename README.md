@@ -2,34 +2,40 @@
 
 A `Kubernetes cluster` project that simulates `Pod` auto-scaling.
 
-There are two ways to run:
+\*\*NOTE - There are two ways to run:
 
 Option 1: using `docker-compose` to run as standalone Docker containers.
 
-Option 2: using `kind` to run local Kubernetes clusters using Docker containers.
+Option 2: using `kind` to run `local Kubernetes clusters` using Docker containers.
 
-## Install Docker Desktop
+This page contains common installation steps for both options. For remaining installation/deployment steps:
+
+- For Option 1, view `~/project_root/README-Docker-Compose-Installation.md`.
+- For Option 2, view `~/project_root/README-Kubernetes-Installation.md`.
+
+## Common Installation Steps
+
+### Install Docker Desktop
 
 - https://www.docker.com/products/docker-desktop/
 
-### Optional
+#### Optional
 
-Some services require additional steps for installation.
+- `kafdrop`, `prometheus` and `grafana` require additional installation steps.
 
-- To skip additional installation for `Kafdrop`, you can simply comment out the `kafdrop-server` section from services in `docker-compose.yaml`
-- To skip additional installation for `Prometheus`, you can simply comment out the `prometheus` and `grafana` sections from services in `docker-compose.yaml`
+  - You can simply skip these by commenting them out from the services section in `docker-compose.yaml`
 
-- Kafdrop setup
+- To install:
 
-  - To run Kafdrop, you will need to prepare a `kafdrop .bin.tar.gz` file.
+  - Kafdrop
 
-    - Follow the `Building` instructions at [GitHub-obsidiandynamics](https://github.com/obsidiandynamics/kafdrop).
-    - The output will produce a `/target` directory.
+    - To run Kafdrop, you will need to prepare a `kafdrop .bin.tar.gz` file.
+      - Follow the `Building` instructions at [GitHub-obsidiandynamics](https://github.com/obsidiandynamics/kafdrop).
+      - The output will produce a `/target` directory.
       - Copy and paste `kafdrop-4.0.3-SNAPSHOT-bin.tar.gz` into `~/project_root/kafdrop`
 
-- Prometheus setup
-
-  - To run Prometheus, download `jmx_prometheus_javaagent-1.0.1.jar` from [Github-prometheus](https://github.com/prometheus/jmx_exporter/releases) and place into `~/project_root/kafka/server`.
+  - Prometheus
+    - To run Prometheus, download `jmx_prometheus_javaagent-1.0.1.jar` from [Github-prometheus](https://github.com/prometheus/jmx_exporter/releases) and place into `~/project_root/kafka/server`.
 
 ## Build Docker Images
 
@@ -47,19 +53,13 @@ Some services require additional steps for installation.
      && docker build -t zookeeper-3.9.2:latest ./zookeeper
     ```
 
-## Deploy with Docker Compose
+### Remaining Installation / Deployment
 
-- Deploy with docker-compose
+For remaining installation/deployment steps:
 
-  - ```bash
-    docker-compose -f docker-compose.yaml up
-    ```
+- For Option 1, view `~/project_root/README-Docker-Compose-Installation.md`.
+- For Option 2, view `~/project_root/README-Kubernetes-Installation.md`.
 
-  - Debugging: view config
+### Screenshot - Docker Compose
 
-    - ```bash
-      docker-compose -f docker-compose.yaml config
-      ```
-
-### Screenshot
 <img src="/screenshots/docker-compose.png" alt="project screenshot for docker-compose" />
